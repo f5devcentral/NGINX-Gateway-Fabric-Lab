@@ -1,28 +1,34 @@
-# Solutions Engineering Template Repository
+# NGINX Gateway Fabric Lab
 
-A template repository that contains all required files (LICENSE, SUPPORT, CONTRIBUTING, etc) as outlined in the org standards.  
-
-The sections below are recommended in your project's README.md file.
+This repository provides a full lab walkthrough for [NGINX Gateway Fabric](https://github.com/nginx/nginx-gateway-fabric) and several use cases.
 
 ## Overview
 
-Provide a short overview of the project.
+This repository provides a comprehensive walkthrough of leveraging NGINX Gateway Fabric within a Kubernetes environment.
+It showcases a variety of use cases, demonstrating how to effectively implement and manage gateway services for microservices architectures.
+The lab includes step-by-step instructions, configuration examples, and practical scenarios that illustrate the powerful features of NGINX Gateway Fabric, such as traffic management, security enhancements, and load balancing.
+
+Whether you're a beginner looking to learn or an experienced developer seeking to deepen your understanding of NGINX Gateway Fabric in Kubernetes, this repository equips you with the necessary resources and insights to publish and secure efficient and scalable applications.
 
 ## Getting Started
 
-Provide a quick example of how to use your code.  This should provide the user with a launch point to quickly see what the project can offer them.
+Prerequisites to use this repository are:
 
-## Installation
+* Running Kubernetes cluster
+* Kubectl
+* [jq](https://github.com/jqlang/jq) 
+* [grpcurl](https://github.com/fullstorydev/grpcurl)
+* Valid NGINX Plus license. You can request a trial license [here](https://www.f5.com/trials/nginx-one)
+  * Three files are needed (sample names here are from a trial license): `nginx-one-eval.crt` `nginx-one-eval.key` and `nginx-one-eval.jwt`
 
-Outline the requirements and steps to install this project.
+## Deployment
 
-## Usage
+1. [Deploy](/DEPLOYING.md) NGINX Gateway Fabric
+2. [Deploy](labs) use cases
 
-Outline how the user can use your project and the various features the project offers.
+## Removal
 
-## Development
-
-Outline any requirements to setup a development environment if someone would like to contribute.  You may also link to another file for this information.
+Follow the instructions [here](/DEPLOYING.md#uninstalling) to uninstall NGINX Gateway Fabric
 
 ## Support
 
@@ -38,11 +44,11 @@ Please refer to the [F5 DevCentral Community Code of Conduct](code_of_conduct.md
 
 ## Copyright
 
-Copyright 2014-2020 F5 Networks Inc.
+Copyright 2014-2025 F5, Inc.
 
 ### F5 Networks Contributor License Agreement
 
-Before you start contributing to any project sponsored by F5 Networks, Inc. (F5) on GitHub, you will need to sign a Contributor License Agreement (CLA).
+Before you start contributing to any project sponsored by F5, Inc. (F5) on GitHub, you will need to sign a Contributor License Agreement (CLA).
 
 If you are signing as an individual, we recommend that you talk to your employer (if applicable) before signing the CLA since some employment agreements may have restrictions on your contributions to other projects.
 Otherwise by submitting a CLA you represent that you are legally entitled to grant the licenses recited therein.
