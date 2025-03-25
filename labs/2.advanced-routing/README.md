@@ -16,7 +16,7 @@ echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT\nHTTPS port : $HTTPS_PORT
 
 `cd` into the lab directory
 ```code
-cd ~/NGINX-Gateway-Fabric-Lab/labs/1.advanced-routing
+cd ~/NGINX-Gateway-Fabric-Lab/labs/2.advanced-routing
 ```
 
 Create the gateway object

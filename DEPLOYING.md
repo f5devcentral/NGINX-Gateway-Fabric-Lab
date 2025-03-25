@@ -74,7 +74,7 @@ ngf-nginx-gateway-fabric-6d6454c589-m7hs4   2/2     Running   0          16s
 kubectl logs -l app.kubernetes.io/instance=ngf -n nginx-gateway -c nginx-gateway
 ```
 
-Log should show
+Output should be similar to
 
 ```code
 {"level":"info","ts":"2025-03-24T09:24:06Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}

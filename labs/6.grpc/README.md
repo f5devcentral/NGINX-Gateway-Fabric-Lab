@@ -16,7 +16,7 @@ echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT\nHTTPS port : $HTTPS_PORT
 
 `cd` into the lab directory
 ```code
-cd ~/NGINX-Gateway-Fabric-Lab/labs/5.grpc
+cd ~/NGINX-Gateway-Fabric-Lab/labs/6.grpc
 ```
 
 Deploy the sample application

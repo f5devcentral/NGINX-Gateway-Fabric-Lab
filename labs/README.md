@@ -18,6 +18,7 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 2](2.advanced-routing) - Advanced routing using HTTP matching conditions
 - [Lab 3](3.http-headers) - Modify HTTP request and response headers
 - [Lab 4](4.tls-offload) - TLS offload
-- [Lab 5](5.grpc) - gRPC support
+- [Lab 5](5.traffic-splitting) - Traffic splitting
+- [Lab 6](6.grpc) - gRPC support
 
 The official NGINX Gateway Fabric repository provides additional [examples](https://github.com/nginx/nginx-gateway-fabric/tree/main/examples)
