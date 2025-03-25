@@ -3,7 +3,7 @@
 1. Clone this repository
 
 ```code
-git clone https://github.com/fabriziofiorucci/NGINX-Gateway-Fabric-Lab.git
+git clone https://github.com/f5devcentral/NGINX-Gateway-Fabric-Lab.git
 ```
 
 2. Change directory
