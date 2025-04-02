@@ -26,7 +26,7 @@ kubectl create secret generic nplus-license --from-file license.jwt=<nginx-one-e
 
 Note: `<nginx-one-eval.jwt>` is the path and filename of your `nginx-one-eval.jwt` file
 
-4. List available NGINX Gateway Fabric releases
+4. List available NGINX Gateway Fabric docker images
 
 ```code
 curl -s https://private-registry.nginx.com/v2/nginx-gateway-fabric/nginx-plus/tags/list --key <nginx-one-eval.key> --cert <nginx-one-eval.crt> | jq
