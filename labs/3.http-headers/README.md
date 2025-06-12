@@ -2,42 +2,14 @@
 
 This use case shows how to modify HTTP headers
 
-Get NGINX Gateway Fabric Node IP, HTTP and HTTPS NodePorts
-```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -n nginx-gateway -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc ngf-nginx-gateway-fabric -n nginx-gateway -o jsonpath='{.spec.ports[0].nodePort}'`
-export HTTPS_PORT=`kubectl get svc ngf-nginx-gateway-fabric -n nginx-gateway -o jsonpath='{.spec.ports[1].nodePort}'`
-```
-
-Check NGINX Gateway Fabric IP address, HTTP and HTTPS ports
-```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT\nHTTPS port : $HTTPS_PORT"
-```
-
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/3.http-headers
 ```
 
-Create the gateway object
-```code
-kubectl apply -f 0.gateway.yaml
-```
-
-Check the gateway
-```code
-kubectl get gateway
-```
-
-Output should be similar to
-```code
-NAME      CLASS   ADDRESS   PROGRAMMED   AGE
-gateway   nginx             True         4s
-```
-
 Deploy the sample application
 ```code
-kubectl apply -f 1.app.yaml
+kubectl apply -f 0.app.yaml
 ```
 
 Verify that all pods are in the `Running` state
@@ -50,17 +22,58 @@ Output should be similar to
 
 ```
 NAME                           READY   STATUS    RESTARTS   AGE
-pod/headers-67f468496f-x6hlj   1/1     Running   0          3s
+pod/headers-67f468496f-ncf8s   1/1     Running   0          18s
 
 NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
-service/headers      ClusterIP   10.108.186.184   <none>        80/TCP    3s
-service/kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   38d
+service/headers      ClusterIP   10.105.244.169   <none>        80/TCP    18s
+service/kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   268d
 
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/headers   1/1     1            1           3s
+deployment.apps/headers   1/1     1            1           18s
 
 NAME                                 DESIRED   CURRENT   READY   AGE
-replicaset.apps/headers-67f468496f   1         1         1       3s
+replicaset.apps/headers-67f468496f   1         1         1       18s
+```
+
+Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
+```code
+kubectl apply -f 1.gateway.yaml
+```
+
+Check the NGINX Gateway Fabric dataplane pod status
+```
+kubectl get pods
+```
+
+`gateway-nginx-c9bcdf4d4-j9pw5` pod is the NGINX Gateway Fabric dataplane
+```code
+NAME                            READY   STATUS    RESTARTS   AGE
+gateway-nginx-c9bcdf4d4-j9pw5   1/1     Running   0          49s
+headers-67f468496f-ncf8s        1/1     Running   0          92s
+```
+
+Check the gateway
+```code
+kubectl get gateway
+```
+
+Output should be similar to
+```code
+NAME      CLASS   ADDRESS      PROGRAMMED   AGE
+gateway   nginx   10.99.25.2   True         4s
+```
+
+Check the NGINX Gateway Fabric Service
+```code
+kubectl get service
+```
+
+`gateway-nginx` is the NGINX Gateway Fabric dataplane service
+```code
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+gateway-nginx   NodePort    10.99.25.2       <none>        80:30344/TCP   4m19s
+headers         ClusterIP   10.105.244.169   <none>        80/TCP         5m2s
+kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        268d
 ```
 
 Create the HTTP routes
@@ -79,6 +92,17 @@ NAME      HOSTNAMES              AGE
 headers   ["echo.example.com"]   3s
 ```
 
+Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+```code
+export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
+export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+```
+
+Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+```code
+echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+```
+
 Access the test application
 ```code
 curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
@@ -89,9 +113,9 @@ Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Mon, 24 Mar 2025 22:22:10 GMT
+Date: Thu, 12 Jun 2025 11:09:02 GMT
 Content-Type: text/plain
-Content-Length: 487
+Content-Length: 495
 Connection: keep-alive
 X-Header-Add: this-is-the-appended-value
 X-Header-Set: overwritten-value
@@ -100,9 +124,9 @@ Headers:
   header 'Accept-Encoding' is 'compress'
   header 'My-cool-header' is 'my-client-value,this-is-an-appended-value'
   header 'My-Overwrite-Header' is 'this-is-the-only-value'
-  header 'Host' is 'echo.example.com:31651'
-  header 'X-Forwarded-For' is '10.1.1.8'
-  header 'X-Real-IP' is '10.1.1.8'
+  header 'Host' is 'echo.example.com:30344'
+  header 'X-Forwarded-For' is '192.168.2.26'
+  header 'X-Real-IP' is '192.168.2.26'
   header 'X-Forwarded-Proto' is 'http'
   header 'X-Forwarded-Host' is 'echo.example.com'
   header 'X-Forwarded-Port' is '80'
