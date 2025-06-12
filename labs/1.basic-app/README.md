@@ -2,42 +2,14 @@
 
 This use case shows how to publish two sample applications using URI-based routing
 
-Get NGINX Gateway Fabric Node IP, HTTP and HTTPS NodePorts
-```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -n nginx-gateway -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc ngf-nginx-gateway-fabric -n nginx-gateway -o jsonpath='{.spec.ports[0].nodePort}'`
-export HTTPS_PORT=`kubectl get svc ngf-nginx-gateway-fabric -n nginx-gateway -o jsonpath='{.spec.ports[1].nodePort}'`
-```
-
-Check NGINX Gateway Fabric IP address, HTTP and HTTPS ports
-```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT\nHTTPS port : $HTTPS_PORT"
-```
-
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/1.basic-app
 ```
 
-Create the gateway object
-```code
-kubectl apply -f 0.gateway.yaml
-```
-
-Check the gateway
-```code
-kubectl get gateway
-```
-
-Output should be similar to
-```code
-NAME      CLASS   ADDRESS   PROGRAMMED   AGE
-gateway   nginx             True         5s
-```
-
 Deploy two sample web applications
 ```code
-kubectl apply -f 1.cafe.yaml
+kubectl apply -f 0.cafe.yaml
 ```
 
 Verify that all pods are in the `Running` state
@@ -67,6 +39,49 @@ replicaset.apps/coffee-56b44d4c55   1         1         1       8m39s
 replicaset.apps/tea-596697966f      1         1         1       8m39s
 ```
 
+Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
+```code
+kubectl apply -f 1.gateway.yaml
+```
+
+Check the NGINX Gateway Fabric dataplane pod status
+```
+kubectl get pods
+```
+
+The `gateway-nginx-c9bcdf4d4-4hl7c` pod is the NGINX Gateway Fabric dataplane
+```
+NAME                            READY   STATUS    RESTARTS   AGE
+coffee-56b44d4c55-6drv2         1/1     Running   0          47s
+gateway-nginx-c9bcdf4d4-4hl7c   1/1     Running   0          24s
+tea-596697966f-fwf2r            1/1     Running   0          47s
+```
+
+Check the gateway
+```code
+kubectl get gateway
+```
+
+Output should be similar to
+```code
+NAME      CLASS   ADDRESS        PROGRAMMED   AGE
+gateway   nginx   10.102.76.40   True         5s
+```
+
+Check the NGINX Gateway Fabric Service
+```code
+kubectl get service
+```
+
+`gateway-nginx` is the NGINX Gateway Fabric dataplane service
+```code
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+coffee          ClusterIP   10.107.171.2    <none>        80/TCP         2s
+gateway-nginx   NodePort    10.100.81.10    <none>        80:32604/TCP   15s
+kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        268d
+tea             ClusterIP   10.96.115.255   <none>        80/TCP         2s
+```
+
 Create the HTTP routes
 ```code
 kubectl apply -f 2.httproute.yaml
@@ -82,6 +97,17 @@ Output should be similar to
 NAME     HOSTNAMES              AGE
 coffee   ["cafe.example.com"]   8s
 tea      ["cafe.example.com"]   8s
+```
+
+Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+```code
+export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
+export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+```
+
+Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+```code
+echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
 ```
 
 Test application access: to access `coffee`
