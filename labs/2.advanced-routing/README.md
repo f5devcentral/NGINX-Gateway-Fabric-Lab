@@ -175,6 +175,34 @@ URI: /coffee
 Request ID: 0f5cd7a2f62965279c4bdc52c660c97d
 ```
 
+Access `coffee-v3` using a query string
+```code
+curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee?queryRegex=query-a
+```
+
+Output should be similar to
+```code
+Server address: 192.168.169.141:8080
+Server name: coffee-v3-7fb98466f-tgq8k
+Date: 18/Sep/2025:21:26:26 +0000
+URI: /coffee?queryRegex=query-a
+Request ID: 2c755a8391ebd2df87f416510fb5478b
+```
+
+Access `coffee-v3` using an HTTP header
+```code
+curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee -H "headerRegex: header-a"
+```
+
+Output should be similar to
+```code
+Server address: 192.168.169.141:8080
+Server name: coffee-v3-7fb98466f-tgq8k
+Date: 18/Sep/2025:21:25:13 +0000
+URI: /coffee
+Request ID: 81431954b4b52edc01d707b4e5822792
+```
+
 Access `tea` using `GET`
 ```code
 curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/tea
