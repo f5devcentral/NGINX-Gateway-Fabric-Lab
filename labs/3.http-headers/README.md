@@ -105,9 +105,45 @@ echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
 
 Access the test application
 ```code
-curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+```
+Output should be similar to
+```code
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 18 Sep 2025 21:42:45 GMT
+Content-Type: text/plain
+Content-Length: 450
+Connection: keep-alive
+
+Headers:
+  header 'Host' is 'echo.example.com:30177'
+  header 'X-Forwarded-For' is '10.1.1.8'
+  header 'X-Real-IP' is '10.1.1.8'
+  header 'X-Forwarded-Proto' is 'http'
+  header 'X-Forwarded-Host' is 'echo.example.com'
+  header 'X-Forwarded-Port' is '80'
+  header 'Connection' is 'close'
+  header 'User-Agent' is 'curl/7.81.0'
+  header 'Accept' is '*/*'
+  header 'My-Cool-Header' is 'my-client-value'
+  header 'My-Overwrite-Header' is 'dont-see-this'
 ```
 
+Request headers of note:
+
+- User-Agent header is present.
+- The header My-Cool-header has its single my-client-value value.
+- The header My-Overwrite-Header has its single dont-see-this value.
+- Accept-encoding header is not present.
+
+Response Headers `X-Header-Set` and `X-Header-Add` are not present.
+
+
+Access the test application via filters route
+```code
+curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+```
 
 Output should be similar to
 ```code
