@@ -34,12 +34,12 @@ curl -s https://private-registry.nginx.com/v2/nginx-gateway-fabric/nginx-plus/ta
 
 Note: `<nginx-one-eval.key>` and `<nginx-one-eval.key>` are the path and filename of your `nginx-one-eval.crt` and `nginx-one-eval.crt` files respectively
 
-Pick the latest version (`2.1.1` at the time of writing)
+Pick the latest version (`2.1.2` at the time of writing)
 
 5. Apply NGINX Gateway Fabric custom resources (make sure `ref=` the latest available NGINX Gateway Fabric version)
 
 ```code
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.1.1" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.1.2" | kubectl apply -f -
 ```
 
 6. Install NGINX Gateway Fabric through its Helm chart (set `nginx.image.tag` to the latest available NGINX Gateway Fabric version)
@@ -47,7 +47,7 @@ kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gate
 ```code
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
-  --set nginx.image.tag=2.1.1 \
+  --set nginx.image.tag=2.1.2 \
   --set nginx.plus=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
@@ -78,15 +78,15 @@ kubectl logs -l app.kubernetes.io/instance=ngf -n nginx-gateway -c nginx-gateway
 Output should be similar to
 
 ```code
-{"level":"info","ts":"2025-09-08T11:06:33Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.1.1","commit":"50bed80d7fe16437a02c4eab50bfc3be23d71ef5","date":"2025-09-03T15:29:56Z","dirty":"false"}
-{"level":"info","ts":"2025-09-08T11:06:33Z","msg":"Starting manager"}
-{"level":"info","ts":"2025-09-08T11:06:33Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
-{"level":"info","ts":"2025-09-08T11:06:33Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
-{"level":"info","ts":"2025-09-08T11:06:33Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
-{"level":"info","ts":"2025-09-08T11:06:33Z","msg":"attempting to acquire leader lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election..."}
-{"level":"info","ts":"2025-09-08T11:06:33Z","msg":"successfully acquired lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
-{"level":"info","ts":"2025-09-08T11:06:33Z","logger":"telemetryJob","msg":"Starting cronjob"}
-{"level":"info","ts":"2025-09-08T11:06:33Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":2}
+{"level":"info","ts":"2025-09-26T08:35:55Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.1.2","commit":"877c415d596ebb86b61f20ed77c7db8847a10f6c","date":"2025-09-25T19:31:07Z","dirty":"false"}
+{"level":"info","ts":"2025-09-26T08:35:55Z","msg":"Starting manager"}
+{"level":"info","ts":"2025-09-26T08:35:55Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
+{"level":"info","ts":"2025-09-26T08:35:55Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
+{"level":"info","ts":"2025-09-26T08:35:55Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
+{"level":"info","ts":"2025-09-26T08:35:55Z","msg":"attempting to acquire leader lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election..."}
+{"level":"info","ts":"2025-09-26T08:35:55Z","msg":"successfully acquired lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
+{"level":"info","ts":"2025-09-26T08:35:55Z","logger":"telemetryJob","msg":"Starting cronjob"}
+{"level":"info","ts":"2025-09-26T08:35:55Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":2}
 ```
 
 9. Check Kubernetes service status
@@ -132,11 +132,11 @@ kubectl delete namespace nginx-gateway
 3. Remove all CRDs
 
 ```code
-kubectl delete -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.1/deploy/crds.yaml
+kubectl delete -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.1.2/deploy/crds.yaml
 ```
 
 4. Remove the Gateway API resources
 
 ```code
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.1.1" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.1.2" | kubectl delete -f -
 ```
