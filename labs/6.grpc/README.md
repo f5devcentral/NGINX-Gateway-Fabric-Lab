@@ -117,7 +117,7 @@ Output should be
 ```
 
 Remove the exact method matching gRPC route
-C```code
+```code
 kubectl delete -f 1.grpcroute-exactmethod.yaml
 ```
 
