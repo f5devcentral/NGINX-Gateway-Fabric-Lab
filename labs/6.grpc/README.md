@@ -226,6 +226,63 @@ Output should be similar to
 2025/06/12 11:42:12 Received: version two
 ```
 
+Test the application sending a request with HTTP header `regexHeader: grpc-header-a`
+```code
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'grpcRegex: grpc-header-a' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+```
+
+The request has been routed to pod `grpc-infra-backend-2`
+```code
+kubectl logs -l app=grpc-infra-backend-v2
+```
+
+Output should be similar to
+```code
+2025/09/18 22:24:44 server listening at [::]:50051
+2025/09/18 22:28:45 Received: bar server
+2025/09/18 22:29:53 Received: version two
+2025/09/18 22:34:08 Received: grpc-header-a
+```
+
+Test the application sending a request with HTTP header `color: blue`
+```code
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "blue 1"}' -H 'color: blue' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+```
+
+The request has been routed to pod `grpc-infra-backend-v1`
+```code
+kubectl logs -l app=grpc-infra-backend-v1
+```
+
+Output should be similar to
+```code
+2025/09/18 22:24:44 server listening at [::]:50051
+2025/09/18 22:26:22 Received: exact
+2025/09/18 22:27:34 Received: bar server
+2025/09/18 22:30:09 Received: version one
+2025/09/18 22:35:22 Received: blue 1
+```
+
+
+Test the application sending a request with HTTP header `color: red`
+```code
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "red 2"}' -H 'color: red' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+```
+
+The request has been routed to pod `grpc-infra-backend-v2`
+```code
+kubectl logs -l app=grpc-infra-backend-v2
+```
+
+Output should be similar to
+```code
+2025/09/18 22:24:44 server listening at [::]:50051
+2025/09/18 22:28:45 Received: bar server
+2025/09/18 22:29:53 Received: version two
+2025/09/18 22:34:08 Received: grpc-header-a
+2025/09/18 22:36:03 Received: red 2
+```
+
 Delete the lab
 
 ```code

@@ -39,3 +39,10 @@ spec:
     backendRefs:
     - name: headers
       port: 80
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /nofilter
+    backendRefs:
+    - name: headers
+      port: 80
