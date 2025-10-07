@@ -49,7 +49,7 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`same-namespace-nginx-8c55bff94-mxmpx` pod is the NGINX Gateway Fabric dataplane
+`same-namespace-nginx-8c55bff94-mxmpx` is the NGINX Gateway Fabric dataplane
 ```
 NAME                                    READY   STATUS    RESTARTS   AGE
 grpc-infra-backend-v1-bc4bc48dc-jkwfx   1/1     Running   0          75s
