@@ -106,7 +106,7 @@ Spec:
 Events:       <none>
 ```
 
-Create the HTTP route
+Create the HTTP route that references the SnippetsFilter
 ```code
 kubectl apply -f 3.httproute.yaml
 ```
