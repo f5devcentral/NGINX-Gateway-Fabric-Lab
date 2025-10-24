@@ -65,7 +65,7 @@ kubectl get gateway
 Output should be similar to
 ```code
 NAME   CLASS   ADDRESS         PROGRAMMED   AGE
-cafe   nginx   10.110.127.86   True         45s
+cafe   nginx   192.168.2.210   True         2s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -75,10 +75,10 @@ kubectl get service
 
 `cafe-nginx` is the NGINX Gateway Fabric dataplane service
 ```
-NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
-cafe-nginx   NodePort    10.110.127.86   <none>        80:32417/TCP,443:32657/TCP   75s
-coffee       ClusterIP   10.101.48.47    <none>        80/TCP                       108s
-kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP                      268d
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
+cafe-nginx   LoadBalancer   10.101.91.76    192.168.2.210   80:31018/TCP,443:32252/TCP   5s
+coffee       ClusterIP      10.96.182.118   <none>          80/TCP                       5s
+kubernetes   ClusterIP      10.96.0.1       <none>          443/TCP                      402d
 ```
 
 Create the HTTP routes
@@ -100,9 +100,9 @@ coffee              ["cafe.example.com"]   4s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
-export HTTPS_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[1].nodePort}'`
+export NGF_IP=`kubectl get svc cafe-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
+export HTTPS_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[1].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port

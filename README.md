@@ -4,7 +4,7 @@ This repository provides a full lab walkthrough for [NGINX Gateway Fabric](https
 
 ## Overview
 
-This repository provides a comprehensive walkthrough of leveraging NGINX Gateway Fabric within a Kubernetes environment.
+This repository provides a comprehensive walkthrough of leveraging NGINX Gateway Fabric within a Kubernetes environment running on Amazon Web Services.
 It showcases a variety of use cases, demonstrating how to effectively implement and manage gateway services for microservices architectures.
 The lab includes step-by-step instructions, configuration examples, and practical scenarios that illustrate the powerful features of NGINX Gateway Fabric, such as traffic management, security enhancements, and load balancing.
 

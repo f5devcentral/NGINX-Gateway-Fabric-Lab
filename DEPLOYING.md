@@ -52,7 +52,8 @@ helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.usage.secretName=nplus-license \
-  --set nginx.service.type=NodePort \
+  --set nginx.service.type=LoadBalancer \
+  --set nginx.service.loadBalancerClass=service.k8s.aws/nlb \
   --set nginxGateway.snippetsFilters.enable=true \
   -n nginx-gateway
 ```

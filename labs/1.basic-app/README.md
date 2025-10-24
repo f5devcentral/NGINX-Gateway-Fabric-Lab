@@ -64,8 +64,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS        PROGRAMMED   AGE
-gateway   nginx   10.102.76.40   True         5s
+NAME      CLASS   ADDRESS         PROGRAMMED   AGE
+gateway   nginx   192.168.2.210   True         42s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -75,11 +75,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-coffee          ClusterIP   10.107.171.2    <none>        80/TCP         2s
-gateway-nginx   NodePort    10.100.81.10    <none>        80:32604/TCP   15s
-kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        268d
-tea             ClusterIP   10.96.115.255   <none>        80/TCP         2s
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
+coffee          ClusterIP      10.103.44.183    <none>          80/TCP         45s
+gateway-nginx   LoadBalancer   10.110.110.185   192.168.2.210   80:30554/TCP   33s
+kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
+tea             ClusterIP      10.110.43.4      <none>          80/TCP         45s
 ```
 
 Create the HTTP routes
@@ -101,8 +101,8 @@ tea      ["cafe.example.com"]   8s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port
@@ -117,11 +117,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 192.168.36.115:8080
-Server name: coffee-56b44d4c55-nm5rx
-Date: 24/Mar/2025:21:08:19 +0000
+Server address: 10.0.156.91:8080
+Server name: coffee-56b44d4c55-58pbv
+Date: 24/Oct/2025:15:18:05 +0000
 URI: /coffee
-Request ID: 5136f3dd98058fc9edcad13998902e79
+Request ID: 0f8b2359841d4076c7793115618032be
 ```
 
 To access `tea`
@@ -131,11 +131,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 192.168.36.116:8080
-Server name: tea-596697966f-lk2gp
-Date: 24/Mar/2025:21:08:23 +0000
+Server address: 10.0.156.90:8080
+Server name: tea-596697966f-ngz25
+Date: 24/Oct/2025:15:18:09 +0000
 URI: /tea
-Request ID: 09603099f3ad42da023a6184019ffbb6
+Request ID: 945cbd55c9d3f9672c26b1ae6b5bafdb
 ```
 
 Delete the lab

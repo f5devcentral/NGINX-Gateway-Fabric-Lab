@@ -85,7 +85,7 @@ kubectl get gateway
 Output should be similar to
 ```code
 NAME   CLASS   ADDRESS         PROGRAMMED   AGE
-cafe   nginx   10.103.90.239   True         2m43s
+cafe   nginx   192.168.2.210   True         24s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -95,14 +95,14 @@ kubectl get service
 
 `cafe-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-cafe-nginx      NodePort    10.103.90.239    <none>        80:31436/TCP   28s
-coffee-v1-svc   ClusterIP   10.107.70.64     <none>        80/TCP         28s
-coffee-v2-svc   ClusterIP   10.102.153.99    <none>        80/TCP         28s
-coffee-v3-svc   ClusterIP   10.110.117.58    <none>        80/TCP         28s
-kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        268d
-tea-post-svc    ClusterIP   10.105.108.172   <none>        80/TCP         28s
-tea-svc         ClusterIP   10.102.222.60    <none>        80/TCP         28s
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
+cafe-nginx      LoadBalancer   10.110.78.90     192.168.2.210   80:32561/TCP   34s
+coffee-v1-svc   ClusterIP      10.110.104.7     <none>          80/TCP         35s
+coffee-v2-svc   ClusterIP      10.106.7.135     <none>          80/TCP         34s
+coffee-v3-svc   ClusterIP      10.101.144.146   <none>          80/TCP         34s
+kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
+tea-post-svc    ClusterIP      10.101.97.170    <none>          80/TCP         34s
+tea-svc         ClusterIP      10.100.124.14    <none>          80/TCP         34s
 ```
 
 Create the HTTP routes
@@ -124,8 +124,8 @@ tea      ["cafe.example.com"]   8s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc cafe-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port
@@ -140,11 +140,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 10.0.156.109:8080
-Server name: coffee-v1-c48b96b65-5trnr
-Date: 12/Jun/2025:11:00:28 +0000
+Server address: 10.0.156.103:8080
+Server name: coffee-v1-c48b96b65-782sw
+Date: 24/Oct/2025:15:20:46 +0000
 URI: /coffee
-Request ID: 1a0b8a08ec4f94f6a5f02e7649165b18
+Request ID: db3b0f2df6ba9cb4bf5dc2f1a8861722
 ```
 
 Access `coffee-v2` using a query string
@@ -154,11 +154,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 10.0.156.121:8080
-Server name: coffee-v2-685fd9bb65-dz5pp
-Date: 12/Jun/2025:11:00:44 +0000
+Server address: 10.0.156.80:8080
+Server name: coffee-v2-685fd9bb65-m7lrq
+Date: 24/Oct/2025:15:20:59 +0000
 URI: /coffee?TEST=v2
-Request ID: eac31b251dfdf398033d8e8373df14c9
+Request ID: 5d26539722a330107c229135b0f56d0f
 ```
 
 Access `coffee-v2` using an HTTP header
@@ -168,11 +168,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 10.0.156.121:8080
-Server name: coffee-v2-685fd9bb65-dz5pp
-Date: 12/Jun/2025:11:01:00 +0000
+Server address: 10.0.156.80:8080
+Server name: coffee-v2-685fd9bb65-m7lrq
+Date: 24/Oct/2025:15:21:14 +0000
 URI: /coffee
-Request ID: 0f5cd7a2f62965279c4bdc52c660c97d
+Request ID: bca9e322dd3c42f37fba0bbb4bf36094
 ```
 
 Access `coffee-v3` using a query string
@@ -182,11 +182,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 192.168.169.141:8080
-Server name: coffee-v3-7fb98466f-tgq8k
-Date: 18/Sep/2025:21:26:26 +0000
+Server address: 10.0.156.101:8080
+Server name: coffee-v3-7fb98466f-2dzqr
+Date: 24/Oct/2025:15:21:26 +0000
 URI: /coffee?queryRegex=query-a
-Request ID: 2c755a8391ebd2df87f416510fb5478b
+Request ID: 6bbaa2a9612b82fc8ee8d4dd3e49a06b
 ```
 
 Access `coffee-v3` using an HTTP header
@@ -196,11 +196,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 192.168.169.141:8080
-Server name: coffee-v3-7fb98466f-tgq8k
-Date: 18/Sep/2025:21:25:13 +0000
+Server address: 10.0.156.101:8080
+Server name: coffee-v3-7fb98466f-2dzqr
+Date: 24/Oct/2025:15:21:40 +0000
 URI: /coffee
-Request ID: 81431954b4b52edc01d707b4e5822792
+Request ID: d1047da5f3873a0c854ec1e109a1d646
 ```
 
 Access `tea` using `GET`
@@ -210,11 +210,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 10.0.156.108:8080
-Server name: tea-596697966f-hzjw5
-Date: 12/Jun/2025:11:01:13 +0000
+Server address: 10.0.156.99:8080
+Server name: tea-596697966f-hpxtc
+Date: 24/Oct/2025:15:21:52 +0000
 URI: /tea
-Request ID: 7a45019ce6b1380b5d5402be89103703
+Request ID: d8abee9b48b93c9f440d69a1240c5fc7
 ```
 
 Access `tea` using `POST`
@@ -224,11 +224,11 @@ curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP
 
 Output should be similar to
 ```code
-Server address: 10.0.156.122:8080
-Server name: tea-post-5647b8d885-5xxvf
-Date: 12/Jun/2025:11:01:32 +0000
+Server address: 10.0.156.96:8080
+Server name: tea-post-5647b8d885-jngtg
+Date: 24/Oct/2025:15:22:03 +0000
 URI: /tea
-Request ID: 92c6bb8c35b24c1ca0e68eaaf4bbbf40
+Request ID: 19f6f5f9f27c701f9a8bed30dcb80c74
 ```
 
 Delete the lab

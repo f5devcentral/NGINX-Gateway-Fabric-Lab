@@ -75,11 +75,11 @@ kubectl get service
 
 `same-namespace-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-grpc-infra-backend-v1   ClusterIP   10.109.98.121    <none>        8080/TCP       2m21s
-grpc-infra-backend-v2   ClusterIP   10.108.28.155    <none>        8080/TCP       2m20s
-kubernetes              ClusterIP   10.96.0.1        <none>        443/TCP        268d
-same-namespace-nginx    NodePort    10.110.235.199   <none>        80:32081/TCP   75s
+NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
+grpc-infra-backend-v1   ClusterIP      10.105.152.11    <none>          8080/TCP       14s
+grpc-infra-backend-v2   ClusterIP      10.108.169.124   <none>          8080/TCP       14s
+kubernetes              ClusterIP      10.96.0.1        <none>          443/TCP        402d
+same-namespace-nginx    LoadBalancer   10.97.135.43     192.168.2.210   80:31252/TCP   10s
 ```
 
 Check the gRPC routes
@@ -95,8 +95,8 @@ exact-matching               2m41s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port
@@ -128,8 +128,8 @@ kubectl apply -f 2.grpcroute-hostname.yaml
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port
@@ -182,8 +182,8 @@ kubectl apply -f 3.grpcroute-header.yaml
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
  
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port

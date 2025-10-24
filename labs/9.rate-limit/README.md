@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS        PROGRAMMED   AGE
-gateway   nginx   10.106.69.99   True         33s
+NAME      CLASS   ADDRESS         PROGRAMMED   AGE
+gateway   nginx   192.168.2.210   True         7s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,10 +70,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-coffee          ClusterIP   10.110.225.51   <none>        80/TCP         55s
-gateway-nginx   NodePort    10.106.69.99    <none>        80:31458/TCP   45s
-kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        386d
+NAME            TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)        AGE
+coffee          ClusterIP      10.98.96.127    <none>          80/TCP         15s
+gateway-nginx   LoadBalancer   10.107.231.13   192.168.2.210   80:31588/TCP   115s
+kubernetes      ClusterIP      10.96.0.1       <none>          443/TCP        402d
 ```
 
 Create the SnippetsFilter to set up the FastCGI configuration snippets
@@ -136,8 +136,8 @@ coffee   ["cafe.example.com"]   4s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port

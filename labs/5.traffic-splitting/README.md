@@ -63,8 +63,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS          PROGRAMMED   AGE
-gateway   nginx   10.105.225.176   True         31s
+NAME      CLASS   ADDRESS         PROGRAMMED   AGE
+gateway   nginx   192.168.2.211   True         8s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -74,11 +74,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-coffee-v1       ClusterIP   10.103.1.92      <none>        80/TCP         89s
-coffee-v2       ClusterIP   10.109.14.146    <none>        80/TCP         89s
-gateway-nginx   NodePort    10.105.225.176   <none>        80:31047/TCP   52s
-kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        268d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
+coffee-v1       ClusterIP      10.107.57.4      <none>          80/TCP         109s
+coffee-v2       ClusterIP      10.106.160.153   <none>          80/TCP         109s
+gateway-nginx   LoadBalancer   10.101.104.28    192.168.2.211   80:31855/TCP   109s
+kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
 ```
 
 Create the HTTP route that splits traffic evenly across the two application versions
@@ -99,8 +99,8 @@ cafe-route   ["cafe.example.com"]   17s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port

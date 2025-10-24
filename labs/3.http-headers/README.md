@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS      PROGRAMMED   AGE
-gateway   nginx   10.99.25.2   True         4s
+NAME      CLASS   ADDRESS         PROGRAMMED   AGE
+gateway   nginx   192.168.2.210   True         7s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,10 +70,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-gateway-nginx   NodePort    10.99.25.2       <none>        80:30344/TCP   4m19s
-headers         ClusterIP   10.105.244.169   <none>        80/TCP         5m2s
-kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        268d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
+gateway-nginx   LoadBalancer   10.98.93.28      192.168.2.210   80:32198/TCP   16s
+headers         ClusterIP      10.108.232.188   <none>          80/TCP         16s
+kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
 ```
 
 Create the HTTP routes
@@ -94,8 +94,8 @@ headers   ["echo.example.com"]   3s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
 Check NGINX Gateway Fabric dataplane instance IP and HTTP port
