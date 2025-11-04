@@ -45,6 +45,12 @@ Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod i
 kubectl apply -f 2.gateway.yaml
 ```
 
+Set AWS annotations to make the Network Load Balancer external and Internet-facing
+```
+kubectl annotate svc cafe-nginx service.beta.kubernetes.io/aws-load-balancer-type=external --overwrite
+kubectl annotate svc cafe-nginx service.beta.kubernetes.io/aws-load-balancer-scheme=internet-facing --overwrite
+```
+
 Check the NGINX Gateway Fabric dataplane pod status
 ```
 kubectl get pods
@@ -100,7 +106,7 @@ coffee              ["cafe.example.com"]   4s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get svc cafe-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export NGF_IP=`kubectl get svc cafe-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
 export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 export HTTPS_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[1].targetPort}'`
 ```

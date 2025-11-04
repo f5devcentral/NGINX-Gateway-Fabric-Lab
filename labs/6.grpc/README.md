@@ -68,6 +68,12 @@ NAME             CLASS   ADDRESS          PROGRAMMED   AGE
 same-namespace   nginx   10.110.235.199   True         63s
 ```
 
+Set AWS annotations to make the Network Load Balancer external and Internet-facing
+```
+kubectl annotate svc same-namespace-nginx service.beta.kubernetes.io/aws-load-balancer-type=external --overwrite
+kubectl annotate svc same-namespace-nginx service.beta.kubernetes.io/aws-load-balancer-scheme=internet-facing --overwrite
+```
+
 Check the NGINX Gateway Fabric Service
 ```code
 kubectl get service
@@ -95,7 +101,7 @@ exact-matching               2m41s
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
 export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
@@ -126,9 +132,15 @@ Create the hostname-based gRPC route
 kubectl apply -f 2.grpcroute-hostname.yaml
 ```
 
+Set AWS annotations to make the Network Load Balancer external and Internet-facing
+```
+kubectl annotate svc grpcroute-listener-hostname-matching-nginx service.beta.kubernetes.io/aws-load-balancer-type=external --overwrite
+kubectl annotate svc grpcroute-listener-hostname-matching-nginx service.beta.kubernetes.io/aws-load-balancer-scheme=internet-facing --overwrite
+```
+
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export NGF_IP=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
 export HTTP_PORT=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
@@ -180,9 +192,15 @@ Create the headers-based gRPC route
 kubectl apply -f 3.grpcroute-header.yaml
 ```
 
+Set AWS annotations to make the Network Load Balancer external and Internet-facing
+```
+kubectl annotate svc same-namespace-nginx service.beta.kubernetes.io/aws-load-balancer-type=external --overwrite
+kubectl annotate svc same-namespace-nginx service.beta.kubernetes.io/aws-load-balancer-scheme=internet-facing --overwrite
+```
+
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
 ```code
-export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
 export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
  
