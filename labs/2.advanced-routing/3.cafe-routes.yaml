@@ -5,8 +5,6 @@ metadata:
 spec:
   parentRefs:
   - name: cafe
-  hostnames:
-  - cafe.example.com
   rules:
   - matches:
     - path:
@@ -57,8 +55,6 @@ metadata:
 spec:
   parentRefs:
   - name: cafe
-  hostnames:
-  - cafe.example.com
   rules:
   - matches:
     - path:
