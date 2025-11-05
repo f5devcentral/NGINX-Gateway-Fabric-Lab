@@ -1,6 +1,11 @@
 # Advanced routing using HTTP matching conditions
 
-This use case shows how to publish two sample applications using HTTP matching conditions routing
+This use case shows how to publish two sample applications using HTTP matching conditions routing:
+
+- Three `coffee` application versions (`v1`, `v2` and `v3`)
+- Two `tea` microservices, for `POST` requests and everything else
+- Traffic routing based on query string parameters, HTTP headers and HTTP methods
+- Path-based routing (`/coffee`, `/tea`) with conditional logic
 
 `cd` into the lab directory
 ```code
@@ -23,7 +28,6 @@ Output should be similar to
 
 ```
 NAME                              READY   STATUS    RESTARTS   AGE
-pod/cafe-nginx-7444846d75-cgmms   1/1     Running   0          91s
 pod/coffee-v1-c48b96b65-5trnr     1/1     Running   0          91s
 pod/coffee-v2-685fd9bb65-dz5pp    1/1     Running   0          91s
 pod/coffee-v3-7fb98466f-478hw     1/1     Running   0          91s
@@ -31,7 +35,6 @@ pod/tea-596697966f-hzjw5          1/1     Running   0          91s
 pod/tea-post-5647b8d885-5xxvf     1/1     Running   0          91s
 
 NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-service/cafe-nginx      NodePort    10.103.90.239    <none>        80:31436/TCP   91s
 service/coffee-v1-svc   ClusterIP   10.107.70.64     <none>        80/TCP         91s
 service/coffee-v2-svc   ClusterIP   10.102.153.99    <none>        80/TCP         91s
 service/coffee-v3-svc   ClusterIP   10.110.117.58    <none>        80/TCP         91s
@@ -40,7 +43,6 @@ service/tea-post-svc    ClusterIP   10.105.108.172   <none>        80/TCP       
 service/tea-svc         ClusterIP   10.102.222.60    <none>        80/TCP         91s
 
 NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/cafe-nginx   1/1     1            1           91s
 deployment.apps/coffee-v1    1/1     1            1           91s
 deployment.apps/coffee-v2    1/1     1            1           91s
 deployment.apps/coffee-v3    1/1     1            1           91s
@@ -48,7 +50,6 @@ deployment.apps/tea          1/1     1            1           91s
 deployment.apps/tea-post     1/1     1            1           91s
 
 NAME                                    DESIRED   CURRENT   READY   AGE
-replicaset.apps/cafe-nginx-7444846d75   1         1         1       91s
 replicaset.apps/coffee-v1-c48b96b65     1         1         1       91s
 replicaset.apps/coffee-v2-685fd9bb65    1         1         1       91s
 replicaset.apps/coffee-v3-7fb98466f     1         1         1       91s
@@ -101,14 +102,14 @@ kubectl get service
 
 `cafe-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
-cafe-nginx      LoadBalancer   10.110.78.90     192.168.2.210   80:32561/TCP   34s
-coffee-v1-svc   ClusterIP      10.110.104.7     <none>          80/TCP         35s
-coffee-v2-svc   ClusterIP      10.106.7.135     <none>          80/TCP         34s
-coffee-v3-svc   ClusterIP      10.101.144.146   <none>          80/TCP         34s
-kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
-tea-post-svc    ClusterIP      10.101.97.170    <none>          80/TCP         34s
-tea-svc         ClusterIP      10.100.124.14    <none>          80/TCP         34s
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+cafe-nginx      LoadBalancer   10.110.78.90     k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:32561/TCP   34s
+coffee-v1-svc   ClusterIP      10.110.104.7     <none>                                                                         80/TCP         35s
+coffee-v2-svc   ClusterIP      10.106.7.135     <none>                                                                         80/TCP         34s
+coffee-v3-svc   ClusterIP      10.101.144.146   <none>                                                                         80/TCP         34s
+kubernetes      ClusterIP      10.96.0.1        <none>                                                                         443/TCP        402d
+tea-post-svc    ClusterIP      10.101.97.170    <none>                                                                         80/TCP         34s
+tea-svc         ClusterIP      10.100.124.14    <none>                                                                         80/TCP         34s
 ```
 
 Create the HTTP routes
@@ -128,20 +129,19 @@ coffee   ["cafe.example.com"]   8s
 tea      ["cafe.example.com"]   8s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc cafe-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Access `coffee-v1`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee
 ```
 
 Output should be similar to
@@ -155,7 +155,7 @@ Request ID: db3b0f2df6ba9cb4bf5dc2f1a8861722
 
 Access `coffee-v2` using a query string
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee?TEST=v2
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee?TEST=v2
 ```
 
 Output should be similar to
@@ -169,7 +169,7 @@ Request ID: 5d26539722a330107c229135b0f56d0f
 
 Access `coffee-v2` using an HTTP header
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee -H "version: v2"
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee -H "version: v2"
 ```
 
 Output should be similar to
@@ -183,7 +183,7 @@ Request ID: bca9e322dd3c42f37fba0bbb4bf36094
 
 Access `coffee-v3` using a query string
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee?queryRegex=query-a
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee?queryRegex=query-a
 ```
 
 Output should be similar to
@@ -197,7 +197,7 @@ Request ID: 6bbaa2a9612b82fc8ee8d4dd3e49a06b
 
 Access `coffee-v3` using an HTTP header
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee -H "headerRegex: header-a"
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee -H "headerRegex: header-a"
 ```
 
 Output should be similar to
@@ -211,7 +211,7 @@ Request ID: d1047da5f3873a0c854ec1e109a1d646
 
 Access `tea` using `GET`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/tea
+curl -H "Host: cafe.example.com" http://$NGF_IP/tea
 ```
 
 Output should be similar to
@@ -225,7 +225,7 @@ Request ID: d8abee9b48b93c9f440d69a1240c5fc7
 
 Access `tea` using `POST`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/tea -X POST
+curl -H "Host: cafe.example.com" http://$NGF_IP/tea -X POST
 ```
 
 Output should be similar to

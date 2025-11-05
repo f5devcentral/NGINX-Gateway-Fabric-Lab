@@ -81,11 +81,11 @@ kubectl get service
 
 `same-namespace-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
-grpc-infra-backend-v1   ClusterIP      10.105.152.11    <none>          8080/TCP       14s
-grpc-infra-backend-v2   ClusterIP      10.108.169.124   <none>          8080/TCP       14s
-kubernetes              ClusterIP      10.96.0.1        <none>          443/TCP        402d
-same-namespace-nginx    LoadBalancer   10.97.135.43     192.168.2.210   80:31252/TCP   10s
+NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+grpc-infra-backend-v1   ClusterIP      10.105.152.11    <none>                                                                         8080/TCP       14s
+grpc-infra-backend-v2   ClusterIP      10.108.169.124   <none>                                                                         8080/TCP       14s
+kubernetes              ClusterIP      10.96.0.1        <none>                                                                         443/TCP        402d
+same-namespace-nginx    LoadBalancer   10.97.135.43     k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:31252/TCP   10s
 ```
 
 Check the gRPC routes
@@ -99,20 +99,19 @@ NAME             HOSTNAMES   AGE
 exact-matching               2m41s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Test the application
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "exact"}' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "exact"}' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 Output should be
@@ -138,20 +137,19 @@ kubectl annotate svc grpcroute-listener-hostname-matching-nginx service.beta.kub
 kubectl annotate svc grpcroute-listener-hostname-matching-nginx service.beta.kubernetes.io/aws-load-balancer-scheme=internet-facing --overwrite
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc grpcroute-listener-hostname-matching-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Test the application sending a request to `bar.com`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "bar server"}' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "bar server"}' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-v1`
@@ -168,7 +166,7 @@ Output should be similar to
 
 Test the application sending a request to `foo.bar.com`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority foo.bar.com -d '{"name": "bar server"}' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority foo.bar.com -d '{"name": "bar server"}' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-v2`
@@ -198,20 +196,19 @@ kubectl annotate svc same-namespace-nginx service.beta.kubernetes.io/aws-load-ba
 kubectl annotate svc same-namespace-nginx service.beta.kubernetes.io/aws-load-balancer-scheme=internet-facing --overwrite
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc same-namespace-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc same-namespace-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
  
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Test the application sending a request with HTTP header `version: one`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "version one"}' -H 'version: one' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "version one"}' -H 'version: one' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-v1`
@@ -229,7 +226,7 @@ Output should be similar to
 
 Test the application sending a request with HTTP header `version: two`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "version two"}' -H 'version: two' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "version two"}' -H 'version: two' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-v2`
@@ -246,7 +243,7 @@ Output should be similar to
 
 Test the application sending a request with HTTP header `regexHeader: grpc-header-a`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'grpcRegex: grpc-header-a' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'grpcRegex: grpc-header-a' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-2`
@@ -264,7 +261,7 @@ Output should be similar to
 
 Test the application sending a request with HTTP header `color: blue`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "blue 1"}' -H 'color: blue' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "blue 1"}' -H 'color: blue' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-v1`
@@ -284,7 +281,7 @@ Output should be similar to
 
 Test the application sending a request with HTTP header `color: red`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "red 2"}' -H 'color: red' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "red 2"}' -H 'color: red' ${NGF_IP}:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-v2`

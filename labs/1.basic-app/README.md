@@ -81,11 +81,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
-coffee          ClusterIP      10.103.44.183    <none>          80/TCP         45s
-gateway-nginx   LoadBalancer   10.110.110.185   192.168.2.210   80:30554/TCP   33s
-kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
-tea             ClusterIP      10.110.43.4      <none>          80/TCP         45s
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee          ClusterIP      10.103.44.183    <none>                                                                         80/TCP         45s
+gateway-nginx   LoadBalancer   10.110.110.185   k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:30554/TCP   33s
+kubernetes      ClusterIP      10.96.0.1        <none>                                                                         443/TCP        402d
+tea             ClusterIP      10.110.43.4      <none>                                                                         80/TCP         45s
 ```
 
 Create the HTTP routes
@@ -105,20 +105,19 @@ coffee   ["cafe.example.com"]   8s
 tea      ["cafe.example.com"]   8s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Test application access: to access `coffee`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee
 ```
 
 Output should be similar to
@@ -132,7 +131,7 @@ Request ID: 0f8b2359841d4076c7793115618032be
 
 To access `tea`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/tea
+curl -H "Host: cafe.example.com" http://$NGF_IP/tea
 ```
 
 Output should be similar to

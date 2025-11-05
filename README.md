@@ -23,8 +23,9 @@ Prerequisites to use this repository are:
 
 ## Deployment
 
-1. [Deploy](/DEPLOYING.md) NGINX Gateway Fabric
-2. [Deploy](labs) use cases
+1. Make sure all [EKS prerequisites](/EKS.md) have been correctly set up
+2. [Deploy](/DEPLOYING.md) NGINX Gateway Fabric
+3. [Deploy](labs) use cases
 
 ## Removal
 

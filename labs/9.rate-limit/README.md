@@ -76,10 +76,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)        AGE
-coffee          ClusterIP      10.98.96.127    <none>          80/TCP         15s
-gateway-nginx   LoadBalancer   10.107.231.13   192.168.2.210   80:31588/TCP   115s
-kubernetes      ClusterIP      10.96.0.1       <none>          443/TCP        402d
+NAME            TYPE           CLUSTER-IP      EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee          ClusterIP      10.98.96.127    <none>                                                                         80/TCP         15s
+gateway-nginx   LoadBalancer   10.107.231.13   k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:31588/TCP   115s
+kubernetes      ClusterIP      10.96.0.1       <none>                                                                         443/TCP        402d
 ```
 
 Create the SnippetsFilter to set up the FastCGI configuration snippets
@@ -140,20 +140,19 @@ NAME     HOSTNAMES              AGE
 coffee   ["cafe.example.com"]   4s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Access the application once
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT
+curl -i -H "Host: cafe.example.com" http://$NGF_IP
 ```
 
 Output should be similar to
@@ -176,7 +175,7 @@ Request ID: 5672062ef741e5b3a7ff786ae3fbdb5f
 
 Access the application twice
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT;echo "---";curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT
+curl -i -H "Host: cafe.example.com" http://$NGF_IP; echo "---";curl -i -H "Host: cafe.example.com" http://$NGF_IP
 ```
 
 Output should be similar to

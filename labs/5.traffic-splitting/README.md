@@ -80,11 +80,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
-coffee-v1       ClusterIP      10.107.57.4      <none>          80/TCP         109s
-coffee-v2       ClusterIP      10.106.160.153   <none>          80/TCP         109s
-gateway-nginx   LoadBalancer   10.101.104.28    192.168.2.211   80:31855/TCP   109s
-kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee-v1       ClusterIP      10.107.57.4      <none>                                                                         80/TCP         109s
+coffee-v2       ClusterIP      10.106.160.153   <none>                                                                         80/TCP         109s
+gateway-nginx   LoadBalancer   10.101.104.28    k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:31855/TCP   109s
+kubernetes      ClusterIP      10.96.0.1        <none>                                                                         443/TCP        402d
 ```
 
 Create the HTTP route that splits traffic evenly across the two application versions
@@ -103,20 +103,19 @@ NAME         HOSTNAMES              AGE
 cafe-route   ["cafe.example.com"]   17s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Access the application
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee
+curl -H "Host: cafe.example.com" http://$NGF_IP/coffee
 ```
 
 Output should be similar to either

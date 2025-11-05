@@ -1,6 +1,11 @@
 # TLS offload
 
-This use case shows how to apply TLS offload and HTTP-to-HTTPS redirection
+This use case shows how to apply TLS offload and HTTP-to-HTTPS redirection:
+
+- TLS termination: NGINX Gateway Fabric handles TLS encryption/decryption, backend traffic is unencrypted HTTP
+- HTTP-to-HTTPS redirection: Automatically redirects HTTP requests (port 80) to HTTPS (port 443) using HTTP/302
+- TLS certificate and key management: Uses Kubernetes secrets to store TLS certificates
+- Two listeners: Gateway exposes both HTTP on port TCP/80 and HTTPS on port TCP/443
 
 `cd` into the lab directory
 ```code
@@ -81,10 +86,10 @@ kubectl get service
 
 `cafe-nginx` is the NGINX Gateway Fabric dataplane service
 ```
-NAME         TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                      AGE
-cafe-nginx   LoadBalancer   10.101.91.76    192.168.2.210   80:31018/TCP,443:32252/TCP   5s
-coffee       ClusterIP      10.96.182.118   <none>          80/TCP                       5s
-kubernetes   ClusterIP      10.96.0.1       <none>          443/TCP                      402d
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP                                                                    PORT(S)                      AGE
+cafe-nginx   LoadBalancer   10.101.91.76    k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:31018/TCP,443:32252/TCP   5s
+coffee       ClusterIP      10.96.182.118   <none>                                                                         80/TCP                       5s
+kubernetes   ClusterIP      10.96.0.1       <none>                                                                         443/TCP                      402d
 ```
 
 Create the HTTP routes
@@ -104,21 +109,19 @@ cafe-tls-redirect   ["cafe.example.com"]   4s
 coffee              ["cafe.example.com"]   4s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc cafe-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
-export HTTPS_PORT=`kubectl get svc cafe-nginx -o jsonpath='{.spec.ports[1].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT\nHTTPS port : $HTTPS_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Access `coffee` using `HTTP`
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee
+curl -i -H "Host: cafe.example.com" http://$NGF_IP/coffee
 ```
 
 Output should be similar to
@@ -142,7 +145,7 @@ Location: https://cafe.example.com/coffee
 
 Access `coffee` using `HTTPS`
 ```code
-curl -k --resolve cafe.example.com:$HTTPS_PORT:$NGF_IP https://cafe.example.com:$HTTPS_PORT/coffee
+curl -k --resolve cafe.example.com:443:$NGF_IP https://cafe.example.com:443/coffee
 ```
 
 Output should be similar to

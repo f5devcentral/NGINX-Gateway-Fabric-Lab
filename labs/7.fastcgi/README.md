@@ -76,10 +76,10 @@ kubectl get service
 
 `cafe-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
-gateway-nginx          LoadBalancer   10.103.244.105   192.168.2.211   80:31858/TCP   13s
-kubernetes             ClusterIP      10.96.0.1        <none>          443/TCP        402d
-php-fpm                ClusterIP      10.98.66.18      <none>          9000/TCP       17s
+NAME                   TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+gateway-nginx          LoadBalancer   10.103.244.105   k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:31858/TCP   13s
+kubernetes             ClusterIP      10.96.0.1        <none>                                                                         443/TCP        402d
+php-fpm                ClusterIP      10.98.66.18      <none>                                                                         9000/TCP       17s
 ```
 
 Create the SnippetsFilter to set up the FastCGI configuration snippets
@@ -128,20 +128,19 @@ NAME      HOSTNAMES             AGE
 php-fpm   ["php.example.com"]   13s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Access the PHP application
 ```code
-curl -si --resolve php.example.com:$HTTP_PORT:$NGF_IP http://php.example.com:$HTTP_PORT/phpinfo.php
+curl -si -H "Host: php.example.com" http://$NGF_IP/phpinfo.php
 ```
 
 Output should be similar to

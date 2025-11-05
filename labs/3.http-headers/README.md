@@ -1,6 +1,10 @@
 # Modify HTTP request and response headers
 
-This use case shows how to modify HTTP headers
+This use case shows how to modify HTTP headers:
+
+- Single echo application that displays received headers
+- HTTP request headers manipulation (add, remove, overwrite values)
+- HTTP response headers manipulation (set, append, remove)
 
 `cd` into the lab directory
 ```code
@@ -76,10 +80,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)        AGE
-gateway-nginx   LoadBalancer   10.98.93.28      192.168.2.210   80:32198/TCP   16s
-headers         ClusterIP      10.108.232.188   <none>          80/TCP         16s
-kubernetes      ClusterIP      10.96.0.1        <none>          443/TCP        402d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+gateway-nginx   LoadBalancer   10.98.93.28      k8s-default-gatewayn-b5a9df2a22-3ac3031604d6c961.elb.us-west-2.amazonaws.com   80:32198/TCP   16s
+headers         ClusterIP      10.108.232.188   <none>                                                                         80/TCP         16s
+kubernetes      ClusterIP      10.96.0.1        <none>                                                                         443/TCP        402d
 ```
 
 Create the HTTP routes
@@ -98,20 +102,19 @@ NAME      HOSTNAMES              AGE
 headers   ["echo.example.com"]   3s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
 export NGF_IP=`kubectl get svc gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].targetPort}'`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+Check NGINX Gateway Fabric dataplane instance public-facing hostname
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+echo -e "NGF address: $NGF_IP"
 ```
 
 Access the test application
 ```code
-curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+curl -i -H "Host: echo.example.com" http://$NGF_IP/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
 ```
 Output should be similar to
 ```code
@@ -136,7 +139,7 @@ Headers:
   header 'My-Overwrite-Header' is 'dont-see-this'
 ```
 
-Request headers of note:
+Request headers are:
 
 - User-Agent header is present.
 - The header My-Cool-header has its single my-client-value value.
@@ -148,7 +151,7 @@ Response Headers `X-Header-Set` and `X-Header-Add` are not present.
 
 Access the test application via filters route
 ```code
-curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+curl -i -H "Host: echo.example.com" http://$NGF_IP/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
 ```
 
 Output should be similar to
