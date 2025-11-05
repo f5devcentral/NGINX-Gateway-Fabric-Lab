@@ -45,14 +45,15 @@ kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gate
 6. Install NGINX Gateway Fabric through its Helm chart (set `nginx.image.tag` to the latest available NGINX Gateway Fabric version)
 
 ```code
-helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
+helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
   --set nginx.image.tag=2.2.0 \
   --set nginx.plus=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.usage.secretName=nplus-license \
-  --set nginx.service.type=NodePort \
+  --set nginx.service.type=LoadBalancer \
+  --set nginx.service.loadBalancerClass=eks.amazonaws.com/nlb \
   --set nginxGateway.snippetsFilters.enable=true \
   -n nginx-gateway
 ```
