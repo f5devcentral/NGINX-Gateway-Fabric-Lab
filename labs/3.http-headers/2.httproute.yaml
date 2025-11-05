@@ -6,8 +6,6 @@ spec:
   parentRefs:
   - name: gateway
     sectionName: http
-  hostnames:
-  - "echo.example.com"
   rules:
   - matches:
     - path:
