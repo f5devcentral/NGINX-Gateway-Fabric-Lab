@@ -6,8 +6,6 @@ spec:
   parentRefs:
   - name: cafe
     sectionName: http
-  hostnames:
-  - "cafe.example.com"
   rules:
   - filters:
     - type: RequestRedirect
@@ -23,8 +21,6 @@ spec:
   parentRefs:
   - name: cafe
     sectionName: https
-  hostnames:
-  - "cafe.example.com"
   rules:
   - matches:
     - path:
