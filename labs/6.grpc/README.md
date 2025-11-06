@@ -243,9 +243,9 @@ Output should be similar to
 2025/11/06 11:05:28 Received: version two
 ```
 
-Test the application sending a request with HTTP header `regexHeader: grpc-header-a`
+Test the application sending a request with HTTP header `headerRegex: grpc-header-a`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'grpcRegex: grpc-header-a' $NGF_DNS:80 helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'headerRegex: grpc-header-a' $NGF_DNS:80 helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-2`
