@@ -21,18 +21,18 @@ kubectl get all
 Output should be similar to
 
 ```
-NAME                           READY   STATUS    RESTARTS   AGE
-pod/php-fpm-7f8d9d598c-wqsj9   1/1     Running   0          4s
+NAME                           READY   STATUS              RESTARTS   AGE
+pod/php-fpm-69c6d5c564-g6xb6   0/1     ContainerCreating   0          6s
 
-NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-service/kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP    385d
-service/php-fpm      ClusterIP   10.111.251.242   <none>        9000/TCP   4s
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/kubernetes   ClusterIP   10.100.0.1      <none>        443/TCP    23h
+service/php-fpm      ClusterIP   10.100.90.251   <none>        9000/TCP   6s
 
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/php-fpm   1/1     1            1           4s
+deployment.apps/php-fpm   0/1     1            0           6s
 
 NAME                                 DESIRED   CURRENT   READY   AGE
-replicaset.apps/php-fpm-7f8d9d598c   1         1         1       4s
+replicaset.apps/php-fpm-69c6d5c564   1         1         0       6s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -45,11 +45,11 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-56678b747f-f6h2w` is the NGINX Gateway Fabric dataplane
+`gateway-nginx-67fb4cdf89-g6gk9` is the NGINX Gateway Fabric dataplane
 ```
 NAME                             READY   STATUS    RESTARTS   AGE
-gateway-nginx-56678b747f-f6h2w   1/1     Running   0          82s
-php-fpm-7f8d9d598c-wqsj9         1/1     Running   0          2m27s
+gateway-nginx-67fb4cdf89-g6gk9   1/1     Running   0          17s
+php-fpm-69c6d5c564-g6xb6         1/1     Running   0          36s
 ```
 
 Check the gateway
@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS         PROGRAMMED   AGE
-gateway   nginx   10.96.234.240   True         113s
+NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
+gateway   nginx   k8s-default-gatewayn-d3d939fb2e-a7f8853dff4f389f.elb.us-west-2.amazonaws.com   True         83s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,10 +70,10 @@ kubectl get service
 
 `cafe-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-gateway-nginx   NodePort    10.96.234.240    <none>        80:31933/TCP   2m23s
-kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        385d
-php-fpm         ClusterIP   10.111.251.242   <none>        9000/TCP       3m27s
+NAME            TYPE           CLUSTER-IP      EXTERNAL-IP                                                                    PORT(S)        AGE
+gateway-nginx   LoadBalancer   10.100.64.186   k8s-default-gatewayn-d3d939fb2e-a7f8853dff4f389f.elb.us-west-2.amazonaws.com   80:31328/TCP   93s
+kubernetes      ClusterIP      10.100.0.1      <none>                                                                         443/TCP        23h
+php-fpm         ClusterIP      10.100.90.251   <none>                                                                         9000/TCP       112s
 ```
 
 Create the SnippetsFilter to set up the FastCGI configuration snippets
@@ -95,15 +95,25 @@ Annotations:  <none>
 API Version:  gateway.nginx.org/v1alpha1
 Kind:         SnippetsFilter
 Metadata:
-  Creation Timestamp:  2025-10-07T08:10:17Z
+  Creation Timestamp:  2025-11-06T11:19:05Z
   Generation:          1
-  Resource Version:    66548537
-  UID:                 50958b7f-ebb0-4b8a-b16c-e60794e97c57
+  Resource Version:    466380
+  UID:                 0d60e7ea-ec62-49ce-a4ef-720469841251
 Spec:
   Snippets:
     Context:  http.server.location
     Value:    location / { resolver kube-dns.kube-system.svc.cluster.local;fastcgi_param SCRIPT_FILENAME /var/www/html/public/index.php;fastcgi_param DOCUMENT_ROOT /var/www/html/public;fastcgi_param QUERY_STRING $args;fastcgi_param REQUEST_METHOD $request_method;fastcgi_param CONTENT_TYPE $content_type;fastcgi_param CONTENT_LENGTH $content_length;fastcgi_param PATH_INFO $uri;fastcgi_param PATH_TRANSLATED /var/www/html/public$uri;fastcgi_index index.php;fastcgi_buffer_size 32k;fastcgi_buffers 16 16k;fastcgi_pass php-fpm.default.svc.cluster.local:9000;}
-Events:       <none>
+Status:
+  Controllers:
+    Conditions:
+      Last Transition Time:  2025-11-06T11:19:05Z
+      Message:               SnippetsFilter is accepted
+      Observed Generation:   1
+      Reason:                Accepted
+      Status:                True
+      Type:                  Accepted
+    Controller Name:         gateway.nginx.org/nginx-gateway-controller
+Events:                      <none>
 ```
 
 Create the HTTP route that references the SnippetsFilter
@@ -122,27 +132,31 @@ NAME      HOSTNAMES             AGE
 php-fpm   ["php.example.com"]   13s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
+```
+
+Check NGINX Gateway Fabric dataplane loadbalancer DNS
+```code
+echo -e "NGF address: $NGF_DNS"
 ```
 
 Access the PHP application
 ```code
-curl -si --resolve php.example.com:$HTTP_PORT:$NGF_IP http://php.example.com:$HTTP_PORT/phpinfo.php
+curl -i -H "Host: php.example.com" http://$NGF_DNS/phpinfo.php
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Tue, 07 Oct 2025 08:28:49 GMT
+Date: Thu, 06 Nov 2025 11:22:26 GMT
 Content-Type: text/html; charset=UTF-8
 Transfer-Encoding: chunked
 Connection: keep-alive
@@ -151,10 +165,9 @@ X-Powered-By: PHP/8.2.29
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head>
 <style type="text/css">
-body {background-color: #fff; color: #222; font-family: sans-serif;}
-pre {margin: 0; font-family: monospace;}
-[...]
-<tr class="v"><td>
+
+[... OMMITED TO MAKE IT SHORT ...]
+
 <p>
 This program is free software; you can redistribute it and/or modify it under the terms of the PHP License as published by the PHP Group and included in the distribution in the file:  LICENSE
 </p>
