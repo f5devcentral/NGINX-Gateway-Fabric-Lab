@@ -21,21 +21,22 @@ kubectl get all
 Output should be similar to
 
 ```code
-pod/coffee-v1-c48b96b65-gqkxr    1/1     Running   0          4s
-pod/coffee-v2-685fd9bb65-wl56z   1/1     Running   0          4s
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/coffee-v1-767764946-7jhfp    1/1     Running   0          6s
+pod/coffee-v2-677787799d-kpmtg   1/1     Running   0          6s
 
-NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
-service/coffee-v1    ClusterIP   10.103.1.92     <none>        80/TCP    4s
-service/coffee-v2    ClusterIP   10.109.14.146   <none>        80/TCP    4s
-service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   268d
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/coffee-v1    ClusterIP   10.100.94.39     <none>        80/TCP    6s
+service/coffee-v2    ClusterIP   10.100.235.108   <none>        80/TCP    6s
+service/kubernetes   ClusterIP   10.100.0.1       <none>        443/TCP   22h
 
 NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/coffee-v1   1/1     1            1           4s
-deployment.apps/coffee-v2   1/1     1            1           4s
+deployment.apps/coffee-v1   1/1     1            1           6s
+deployment.apps/coffee-v2   1/1     1            1           6s
 
 NAME                                   DESIRED   CURRENT   READY   AGE
-replicaset.apps/coffee-v1-c48b96b65    1         1         1       4s
-replicaset.apps/coffee-v2-685fd9bb65   1         1         1       4s
+replicaset.apps/coffee-v1-767764946    1         1         1       6s
+replicaset.apps/coffee-v2-677787799d   1         1         1       6s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -48,12 +49,12 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-c9bcdf4d4-j7bbg` pod is the NGINX Gateway Fabric dataplane
+`gateway-nginx-67fb4cdf89-b2fdn` pod is the NGINX Gateway Fabric dataplane
 ```
-NAME                            READY   STATUS    RESTARTS   AGE
-coffee-v1-c48b96b65-gqkxr       1/1     Running   0          47s
-coffee-v2-685fd9bb65-wl56z      1/1     Running   0          47s
-gateway-nginx-c9bcdf4d4-j7bbg   1/1     Running   0          10s
+NAME                             READY   STATUS    RESTARTS   AGE
+coffee-v1-767764946-7jhfp        1/1     Running   0          34s
+coffee-v2-677787799d-kpmtg       1/1     Running   0          34s
+gateway-nginx-67fb4cdf89-b2fdn   0/1     Running   0          7s
 ```
 
 Check the gateway
@@ -63,8 +64,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS          PROGRAMMED   AGE
-gateway   nginx   10.105.225.176   True         31s
+NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
+gateway   nginx   k8s-default-gatewayn-2a78c4a4f4-ffded1fc8191491b.elb.us-west-2.amazonaws.com   True         27s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -74,11 +75,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-coffee-v1       ClusterIP   10.103.1.92      <none>        80/TCP         89s
-coffee-v2       ClusterIP   10.109.14.146    <none>        80/TCP         89s
-gateway-nginx   NodePort    10.105.225.176   <none>        80:31047/TCP   52s
-kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        268d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee-v1       ClusterIP      10.100.94.39     <none>                                                                         80/TCP         71s
+coffee-v2       ClusterIP      10.100.235.108   <none>                                                                         80/TCP         71s
+gateway-nginx   LoadBalancer   10.100.66.106    k8s-default-gatewayn-2a78c4a4f4-ffded1fc8191491b.elb.us-west-2.amazonaws.com   80:31740/TCP   44s
+kubernetes      ClusterIP      10.100.0.1       <none>                                                                         443/TCP        22h
 ```
 
 Create the HTTP route that splits traffic evenly across the two application versions
@@ -94,42 +95,46 @@ kubectl get httproute
 Output should be similar to
 ```code
 NAME         HOSTNAMES              AGE
-cafe-route   ["cafe.example.com"]   17s
+cafe-route   ["cafe.example.com"]   5s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
+```
+
+Check NGINX Gateway Fabric dataplane loadbalancer DNS
+```code
+echo -e "NGF address: $NGF_DNS"
 ```
 
 Access the application
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee
+curl -H "Host: cafe.example.com" http://$NGF_DNS/coffee
 ```
 
 Output should be similar to either
 ```code
-Server address: 10.0.156.127:8080
-Server name: coffee-v1-c48b96b65-gqkxr
-Date: 12/Jun/2025:11:24:59 +0000
+Server address: 192.168.120.144:8080
+Server name: coffee-v1-767764946-7jhfp
+Date: 06/Nov/2025:10:20:48 +0000
 URI: /coffee
-Request ID: e5992510df47c30e1e8a232263db5341
+Request ID: 3f83c5035b92be163f930beb3bae810a
 ```
 
 or
 
 ```code
-Server address: 10.0.156.67:8080
-Server name: coffee-v2-685fd9bb65-wl56z
-Date: 12/Jun/2025:11:24:43 +0000
+Server address: 192.168.120.145:8080
+Server name: coffee-v2-677787799d-kpmtg
+Date: 06/Nov/2025:10:21:05 +0000
 URI: /coffee
-Request ID: 995d20405a70bd5d5468a696e4b95e54
+Request ID: 66f4fcd5dac8cf26a69bcc6029b3fe99
 ```
 
 Run the test script to send 100 requests
@@ -141,8 +146,8 @@ Output should be similar to
 ```code
 ....................................................................................................
 Summary of responses:
-Coffee v1: 59 times
-Coffee v2: 41 times
+Coffee v1: 47 times
+Coffee v2: 53 times
 ```
 
 Update the HTTP Route to split traffic based on 80-20 ratio
@@ -159,8 +164,8 @@ Output should be similar to
 ```code
 ....................................................................................................
 Summary of responses:
-Coffee v1: 82 times
-Coffee v2: 18 times
+Coffee v1: 83 times
+Coffee v2: 17 times
 ```
 
 Delete the lab
