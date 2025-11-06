@@ -45,7 +45,7 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-c9bcdf4d4-j9pw5` pod is the NGINX Gateway Fabric dataplane
+`gateway-nginx-67fb4cdf89-tn957` pod is the NGINX Gateway Fabric dataplane
 ```code
 NAME                             READY   STATUS    RESTARTS   AGE
 gateway-nginx-67fb4cdf89-tn957   1/1     Running   0          15s
