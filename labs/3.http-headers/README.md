@@ -48,8 +48,8 @@ kubectl get pods
 `gateway-nginx-c9bcdf4d4-j9pw5` pod is the NGINX Gateway Fabric dataplane
 ```code
 NAME                             READY   STATUS    RESTARTS   AGE
-gateway-nginx-67fb4cdf89-hk6qg   0/1     Running   0          7s
-headers-85c697d5fb-f9ld7         1/1     Running   0          36s
+gateway-nginx-67fb4cdf89-tn957   1/1     Running   0          15s
+headers-85c697d5fb-789xs         1/1     Running   0          27s
 ```
 
 Check the gateway
@@ -60,7 +60,7 @@ kubectl get gateway
 Output should be similar to
 ```code
 NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
-gateway   nginx   k8s-default-gatewayn-e4c5fd8600-34cb5182e4667d34.elb.us-west-2.amazonaws.com   True         19s
+gateway   nginx   k8s-default-gatewayn-3f1e234d08-581a2f8bb7a5a6ce.elb.us-west-2.amazonaws.com   True         28s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -71,9 +71,9 @@ kubectl get service
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
 NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
-gateway-nginx   LoadBalancer   10.100.205.205   k8s-default-gatewayn-e4c5fd8600-34cb5182e4667d34.elb.us-west-2.amazonaws.com   80:32379/TCP   32s
-headers         ClusterIP      10.100.169.23    <none>                                                                         80/TCP         61s
-kubernetes      ClusterIP      10.100.0.1       <none>                                                                         443/TCP        4h33m
+gateway-nginx   LoadBalancer   10.100.254.177   k8s-default-gatewayn-3f1e234d08-581a2f8bb7a5a6ce.elb.us-west-2.amazonaws.com   80:32692/TCP   40s
+headers         ClusterIP      10.100.148.132   <none>                                                                         80/TCP         52s
+kubernetes      ClusterIP      10.100.0.1       <none>                                                                         443/TCP        22h
 ```
 
 Create the HTTP routes
@@ -88,13 +88,18 @@ kubectl get httproute
 
 Output should be similar to (empty value on HOSTNAME means the routes are not filtering by it)
 ```code
-NAME      HOSTNAMES   AGE
-headers               7s
+NAME      HOSTNAMES              AGE
+headers   ["echo.example.com"]   5s
 ```
 
 Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
 export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
+```
+
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
+```code
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
 ```
 
 Check NGINX Gateway Fabric dataplane loadbalancer DNS
@@ -104,24 +109,24 @@ echo -e "NGF address: $NGF_DNS"
 
 Access the test application
 ```code
-curl -i http://$NGF_DNS/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this"
+curl -H "Host: echo.example.com" -i http://$NGF_DNS/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this"
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Wed, 05 Nov 2025 16:26:58 GMT
+Date: Thu, 06 Nov 2025 10:44:27 GMT
 Content-Type: text/plain
-Content-Length: 572
+Content-Length: 454
 Connection: keep-alive
 
 Headers:
-  header 'Host' is 'k8s-default-gatewayn-e4c5fd8600-34cb5182e4667d34.elb.us-west-2.amazonaws.com'
-  header 'X-Forwarded-For' is '192.168.28.8'
-  header 'X-Real-IP' is '192.168.28.8'
+  header 'Host' is 'echo.example.com'
+  header 'X-Forwarded-For' is '192.168.8.127'
+  header 'X-Real-IP' is '192.168.8.127'
   header 'X-Forwarded-Proto' is 'http'
-  header 'X-Forwarded-Host' is 'k8s-default-gatewayn-e4c5fd8600-34cb5182e4667d34.elb.us-west-2.amazonaws.com'
+  header 'X-Forwarded-Host' is 'echo.example.com'
   header 'X-Forwarded-Port' is '80'
   header 'Connection' is 'close'
   header 'User-Agent' is 'curl/8.11.1'
@@ -142,16 +147,16 @@ Response Headers `X-Header-Set` and `X-Header-Add` are not present.
 
 Access the test application via filters route
 ```code
-curl -i http://$NGF_DNS/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this"
+curl -H "Host: echo.example.com" -i http://$NGF_DNS/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this"
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Wed, 05 Nov 2025 16:27:27 GMT
+Date: Thu, 06 Nov 2025 10:44:59 GMT
 Content-Type: text/plain
-Content-Length: 609
+Content-Length: 491
 Connection: keep-alive
 X-Header-Add: this-is-the-appended-value
 X-Header-Set: overwritten-value
@@ -160,11 +165,11 @@ Headers:
   header 'Accept-Encoding' is 'compress'
   header 'My-cool-header' is 'my-client-value,this-is-an-appended-value'
   header 'My-Overwrite-Header' is 'this-is-the-only-value'
-  header 'Host' is 'k8s-default-gatewayn-e4c5fd8600-34cb5182e4667d34.elb.us-west-2.amazonaws.com'
-  header 'X-Forwarded-For' is '192.168.28.8'
-  header 'X-Real-IP' is '192.168.28.8'
+  header 'Host' is 'echo.example.com'
+  header 'X-Forwarded-For' is '192.168.8.127'
+  header 'X-Real-IP' is '192.168.8.127'
   header 'X-Forwarded-Proto' is 'http'
-  header 'X-Forwarded-Host' is 'k8s-default-gatewayn-e4c5fd8600-34cb5182e4667d34.elb.us-west-2.amazonaws.com'
+  header 'X-Forwarded-Host' is 'echo.example.com'
   header 'X-Forwarded-Port' is '80'
   header 'Connection' is 'close'
   header 'Accept' is '*/*'

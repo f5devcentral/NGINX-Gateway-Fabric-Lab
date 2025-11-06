@@ -111,16 +111,21 @@ Check the HTTP routes
 kubectl get httproute
 ```
 
-Output should be similar to (empty value on HOSTNAME means the routes are not filtering by it)
+Output should be similar to
 ```code
-NAME     HOSTNAMES   AGE
-coffee               9s
-tea                  9s
+NAME     HOSTNAMES              AGE
+coffee   ["cafe.example.com"]   8s
+tea      ["cafe.example.com"]   8s
 ```
 
 Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
 export NGF_DNS=`kubectl get svc cafe-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
+```
+
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
+```code
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
 ```
 
 Check NGINX Gateway Fabric dataplane loadbalancer DNS
@@ -130,7 +135,7 @@ echo -e "NGF address: $NGF_DNS"
 
 Access `coffee-v1`
 ```code
-curl http://$NGF_DNS/coffee
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee
 ```
 
 Output should be similar to
@@ -144,7 +149,7 @@ Request ID: 785584c7d501c6e80e3dcc1b535e7348
 
 Access `coffee-v2` using a query string
 ```code
-curl http://$NGF_DNS/coffee?TEST=v2
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee?TEST=v2
 ```
 
 Output should be similar to
@@ -158,7 +163,7 @@ Request ID: 181bac50948c28314f1f07123139f378
 
 Access `coffee-v2` using an HTTP header
 ```code
-curl http://$NGF_DNS/coffee -H "version: v2"
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee -H "version: v2"
 ```
 
 Output should be similar to
@@ -172,7 +177,7 @@ Request ID: ebb42b305dc7f13fa30b9722526790d7
 
 Access `coffee-v3` using a query string
 ```code
-curl http://$NGF_DNS/coffee?queryRegex=query-a
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee?queryRegex=query-a
 ```
 
 Output should be similar to
@@ -186,7 +191,7 @@ Request ID: d3eaf0a377e55204e22957b9f848e29c
 
 Access `coffee-v3` using an HTTP header
 ```code
-curl http://$NGF_DNS/coffee -H "headerRegex: header-a"
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee -H "headerRegex: header-a"
 ```
 
 Output should be similar to
@@ -200,7 +205,7 @@ Request ID: ca6b2f4c6a296892c21805ffb6525377
 
 Access `tea` using `GET`
 ```code
-curl http://$NGF_DNS/tea
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/tea
 ```
 
 Output should be similar to
@@ -214,7 +219,7 @@ Request ID: 761d865680b9ee8c6d3fef2f4cb9dc59
 
 Access `tea` using `POST`
 ```code
-curl http://$NGF_DNS/tea -X POST
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/tea -X POST
 ```
 
 Output should be similar to

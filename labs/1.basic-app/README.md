@@ -92,16 +92,21 @@ Check the HTTP routes
 kubectl get httproute
 ```
 
-Output should be similar to (empty value on HOSTNAME means the routes are not filtering by it)
+Output should be similar to
 ```code
-NAME     HOSTNAMES   AGE
-coffee               22m
-tea                  22m
+NAME     HOSTNAMES              AGE
+coffee   ["cafe.example.com"]   8s
+tea      ["cafe.example.com"]   8s
 ```
 
 Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
 export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
+```
+
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
+```code
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
 ```
 
 Check NGINX Gateway Fabric dataplane loadbalancer DNS
@@ -111,7 +116,7 @@ echo -e "NGF address: $NGF_DNS"
 
 Test application access: to access `coffee`
 ```code
-curl http://$NGF_DNS/coffee
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee
 ```
 
 Output should be similar to
@@ -125,7 +130,7 @@ Request ID: 1eaef8a9cfbb20013066b620bdf28aa0
 
 To access `tea`
 ```code
-curl http://$NGF_DNS/tea
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/tea
 ```
 
 Output should be similar to

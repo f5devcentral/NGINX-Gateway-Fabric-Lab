@@ -91,16 +91,21 @@ Check the HTTP routes
 kubectl get httproute
 ```
 
-Output should be similar to (empty value on HOSTNAME means the routes are not filtering by it)
+Output should be similar to
 ```code
-NAME                HOSTNAMES   AGE
-cafe-tls-redirect               8s
-coffee                          8s
+NAME                HOSTNAMES              AGE
+cafe-tls-redirect   ["cafe.example.com"]   4s
+coffee              ["cafe.example.com"]   4s
 ```
 
 Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
 export NGF_DNS=`kubectl get svc cafe-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
+```
+
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
+```code
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
 ```
 
 Check NGINX Gateway Fabric dataplane loadbalancer DNS
@@ -110,7 +115,7 @@ echo -e "NGF address: $NGF_DNS"
 
 Access `coffee` using `HTTP`
 ```code
-curl -i http://$NGF_DNS/coffee
+curl -H "Host: cafe.example.com" -i http://$NGF_DNS/coffee
 ```
 
 Output should be similar to
@@ -134,7 +139,7 @@ Location: https://k8s-default-cafengin-4cdfc6c098-7ce79469e7c9a664.elb.us-west-2
 
 Access `coffee` using `HTTPS`
 ```code
-curl -i -k https://$NGF_DNS/coffee
+curl -H "Host: cafe.example.com" -i -k https://$NGF_DNS/coffee
 ```
 
 Output should be similar to
