@@ -2,7 +2,80 @@
 
 See the [prerequisites](/README.md#getting-started)
 
-## Installing
+## Kubernetes cluster bootstrap (optional)
+
+### Amazon EKS Auto Mode
+
+> [!NOTE]  
+> **This step may be omitted if you are participating in an official AWS + F5 event where resources are pre-provisioned.** For self-paced implementations, please be aware that creating Amazon EKS clusters will result in AWS charges to your account.
+
+1. Make sure you have `aws` (version >= 2.31.29) and `eksctl` (version >= 0.216.0) commands available
+
+```code
+eksctl version
+aws --version
+```
+
+2. Verify that your `aws` CLI is properly configured with the valid AWS account credential
+
+```code
+aws sts get-caller-identity
+```
+
+3. Create your EKS Auto Mode cluster named `f5-nginx-lab` using `eksctl` command (takes up to 20 minutes)
+
+```code
+eksctl create cluster --name=f5-nginx-lab --enable-auto-mode
+```
+
+4. Create default IngressClass and StorageClass objects for the native EKS Auto Mode network and storage integrations
+
+```
+cat <<EOF > default-ingress.yaml
+apiVersion: eks.amazonaws.com/v1
+kind: IngressClassParams
+metadata:
+  name: alb
+spec:
+  scheme: internet-facing
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: alb
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: eks.amazonaws.com/alb
+  parameters:
+    apiGroup: eks.amazonaws.com
+    kind: IngressClassParams
+    name: alb
+EOF
+kubectl apply -f default-ingress.yaml
+
+cat <<EOF > default-storage.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: auto-ebs-sc
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+allowedTopologies:
+- matchLabelExpressions:
+  - key: eks.amazonaws.com/compute-type
+    values:
+    - auto
+provisioner: ebs.csi.eks.amazonaws.com
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: gp3
+  encrypted: "true"
+EOF
+kubectl apply -f default-storage.yaml
+```
+
+## NGINX Gateway Fabric Installation
 
 1. Create NGINX Gateway Fabric namespace
 
