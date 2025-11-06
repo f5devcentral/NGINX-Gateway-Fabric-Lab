@@ -1,5 +1,7 @@
 # Summary of Changes and additions to NGINX Gateway Fabric Lab on EKS Workshop
 
+These steps are required when not running EKS Auto Mode
+
 ## Author
 Javier Garcia Garcia - Cloud Operations Architect at AWS
 
