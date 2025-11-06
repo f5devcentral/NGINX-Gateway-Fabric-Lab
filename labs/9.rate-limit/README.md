@@ -22,17 +22,17 @@ Output should be similar to
 
 ```
 NAME                          READY   STATUS    RESTARTS   AGE
-pod/coffee-56b44d4c55-g9gtj   1/1     Running   0          3s
+pod/coffee-676c9f8944-5xsfh   1/1     Running   0          3s
 
-NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-service/coffee       ClusterIP   10.107.232.5   <none>        80/TCP    3s
-service/kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   385d
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/coffee       ClusterIP   10.100.251.237   <none>        80/TCP    3s
+service/kubernetes   ClusterIP   10.100.0.1       <none>        443/TCP   24h
 
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
 deployment.apps/coffee   1/1     1            1           3s
 
 NAME                                DESIRED   CURRENT   READY   AGE
-replicaset.apps/coffee-56b44d4c55   1         1         1       3s
+replicaset.apps/coffee-676c9f8944   1         1         1       3s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -45,11 +45,11 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-56678b747f-jlcp4` is the NGINX Gateway Fabric dataplane pod
+`gateway-nginx-67fb4cdf89-z9crl` is the NGINX Gateway Fabric dataplane pod
 ```
 NAME                             READY   STATUS    RESTARTS   AGE
-coffee-56b44d4c55-t8lkr          1/1     Running   0          16s
-gateway-nginx-56678b747f-jlcp4   1/1     Running   0          15s
+coffee-676c9f8944-5xsfh          1/1     Running   0          25s
+gateway-nginx-67fb4cdf89-z9crl   0/1     Running   0          8s
 ```
 
 Check the gateway
@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS        PROGRAMMED   AGE
-gateway   nginx   10.106.69.99   True         33s
+NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
+gateway   nginx   k8s-default-gatewayn-58be3b1053-5aa88d168e186302.elb.us-west-2.amazonaws.com   True         20s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,10 +70,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-coffee          ClusterIP   10.110.225.51   <none>        80/TCP         55s
-gateway-nginx   NodePort    10.106.69.99    <none>        80:31458/TCP   45s
-kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        386d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee          ClusterIP      10.100.251.237   <none>                                                                         80/TCP         52s
+gateway-nginx   LoadBalancer   10.100.225.218   k8s-default-gatewayn-58be3b1053-5aa88d168e186302.elb.us-west-2.amazonaws.com   80:32760/TCP   35s
+kubernetes      ClusterIP      10.100.0.1       <none>                                                                         443/TCP        24h
 ```
 
 Create the SnippetsFilter to set up the FastCGI configuration snippets
@@ -95,10 +95,10 @@ Annotations:  <none>
 API Version:  gateway.nginx.org/v1alpha1
 Kind:         SnippetsFilter
 Metadata:
-  Creation Timestamp:  2025-10-08T08:42:51Z
+  Creation Timestamp:  2025-11-06T11:49:17Z
   Generation:          1
-  Resource Version:    66775595
-  UID:                 43cf9417-f36e-4039-a01b-73c92a138f22
+  Resource Version:    477282
+  UID:                 bf9802ce-bc25-4d23-a4e9-6a5b287b5ea1
 Spec:
   Snippets:
     Context:  http
@@ -108,7 +108,7 @@ Spec:
 Status:
   Controllers:
     Conditions:
-      Last Transition Time:  2025-10-08T08:42:51Z
+      Last Transition Time:  2025-11-06T11:49:17Z
       Message:               SnippetsFilter is accepted
       Observed Generation:   1
       Reason:                Accepted
@@ -134,65 +134,69 @@ NAME     HOSTNAMES              AGE
 coffee   ["cafe.example.com"]   4s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
+```
+
+Check NGINX Gateway Fabric dataplane loadbalancer DNS
+```code
+echo -e "NGF address: $NGF_DNS"
 ```
 
 Access the application once
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT
+curl -i -H "Host: cafe.example.com" http://$NGF_DNS
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Wed, 08 Oct 2025 08:43:48 GMT
+Date: Thu, 06 Nov 2025 11:51:33 GMT
 Content-Type: text/plain
-Content-Length: 155
+Content-Length: 159
 Connection: keep-alive
-Expires: Wed, 08 Oct 2025 08:43:47 GMT
+Expires: Thu, 06 Nov 2025 11:51:32 GMT
 Cache-Control: no-cache
 
-Server address: 10.0.156.89:8080
-Server name: coffee-56b44d4c55-t8lkr
-Date: 08/Oct/2025:08:43:48 +0000
+Server address: 192.168.120.146:8080
+Server name: coffee-676c9f8944-5xsfh
+Date: 06/Nov/2025:11:51:33 +0000
 URI: /
-Request ID: 5672062ef741e5b3a7ff786ae3fbdb5f
+Request ID: 83eecf4a040ef0b6252513917239c24a
 ```
 
 Access the application twice
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT;echo "---";curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT
+curl -i -H "Host: cafe.example.com" http://$NGF_DNS; echo "---"; curl -i -H "Host: cafe.example.com" http://$NGF_DNS
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Wed, 08 Oct 2025 08:45:33 GMT
+Date: Thu, 06 Nov 2025 11:52:33 GMT
 Content-Type: text/plain
-Content-Length: 155
+Content-Length: 159
 Connection: keep-alive
-Expires: Wed, 08 Oct 2025 08:45:32 GMT
+Expires: Thu, 06 Nov 2025 11:52:32 GMT
 Cache-Control: no-cache
 
-Server address: 10.0.156.89:8080
-Server name: coffee-56b44d4c55-t8lkr
-Date: 08/Oct/2025:08:45:33 +0000
+Server address: 192.168.120.146:8080
+Server name: coffee-676c9f8944-5xsfh
+Date: 06/Nov/2025:11:52:33 +0000
 URI: /
-Request ID: 7b61c81c0aceda518decbb3f194bfd18
+Request ID: 8789c395f5c9af07fc6e74176d8a4459
 ---
 HTTP/1.1 429 Too Many Requests
 Server: nginx
-Date: Wed, 08 Oct 2025 08:45:33 GMT
+Date: Thu, 06 Nov 2025 11:52:33 GMT
 Content-Type: text/html
 Content-Length: 162
 Connection: keep-alive
