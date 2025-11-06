@@ -1,0 +1,4 @@
+# Exclude NGINX Plus license files
+*.jwt
+*.key
+*.crt
