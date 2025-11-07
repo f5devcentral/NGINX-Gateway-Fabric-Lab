@@ -22,17 +22,17 @@ Output should be similar to
 
 ```
 NAME                           READY   STATUS    RESTARTS   AGE
-pod/headers-67f468496f-ncf8s   1/1     Running   0          18s
+pod/headers-85c697d5fb-f9ld7   1/1     Running   0          6s
 
-NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
-service/headers      ClusterIP   10.105.244.169   <none>        80/TCP    18s
-service/kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP   268d
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/headers      ClusterIP   10.100.169.23   <none>        80/TCP    6s
+service/kubernetes   ClusterIP   10.100.0.1      <none>        443/TCP   4h32m
 
 NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/headers   1/1     1            1           18s
+deployment.apps/headers   1/1     1            1           6s
 
 NAME                                 DESIRED   CURRENT   READY   AGE
-replicaset.apps/headers-67f468496f   1         1         1       18s
+replicaset.apps/headers-85c697d5fb   1         1         1       6s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -45,11 +45,11 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-c9bcdf4d4-j9pw5` pod is the NGINX Gateway Fabric dataplane
+`gateway-nginx-67fb4cdf89-tn957` pod is the NGINX Gateway Fabric dataplane
 ```code
-NAME                            READY   STATUS    RESTARTS   AGE
-gateway-nginx-c9bcdf4d4-j9pw5   1/1     Running   0          49s
-headers-67f468496f-ncf8s        1/1     Running   0          92s
+NAME                             READY   STATUS    RESTARTS   AGE
+gateway-nginx-67fb4cdf89-tn957   1/1     Running   0          15s
+headers-85c697d5fb-789xs         1/1     Running   0          27s
 ```
 
 Check the gateway
@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS      PROGRAMMED   AGE
-gateway   nginx   10.99.25.2   True         4s
+NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
+gateway   nginx   k8s-default-gatewayn-3f1e234d08-581a2f8bb7a5a6ce.elb.us-west-2.amazonaws.com   True         28s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,10 +70,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-gateway-nginx   NodePort    10.99.25.2       <none>        80:30344/TCP   4m19s
-headers         ClusterIP   10.105.244.169   <none>        80/TCP         5m2s
-kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        268d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+gateway-nginx   LoadBalancer   10.100.254.177   k8s-default-gatewayn-3f1e234d08-581a2f8bb7a5a6ce.elb.us-west-2.amazonaws.com   80:32692/TCP   40s
+headers         ClusterIP      10.100.148.132   <none>                                                                         80/TCP         52s
+kubernetes      ClusterIP      10.100.0.1       <none>                                                                         443/TCP        22h
 ```
 
 Create the HTTP routes
@@ -86,45 +86,50 @@ Check the HTTP routes
 kubectl get httproute
 ```
 
-Output should be similar to
+Output should be similar to (empty value on HOSTNAME means the routes are not filtering by it)
 ```code
 NAME      HOSTNAMES              AGE
-headers   ["echo.example.com"]   3s
+headers   ["echo.example.com"]   5s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
+```
+
+Check NGINX Gateway Fabric dataplane loadbalancer DNS
+```code
+echo -e "NGF address: $NGF_DNS"
 ```
 
 Access the test application
 ```code
-curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+curl -H "Host: echo.example.com" -i http://$NGF_DNS/nofilter -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this"
 ```
+
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Thu, 18 Sep 2025 21:42:45 GMT
+Date: Thu, 06 Nov 2025 10:44:27 GMT
 Content-Type: text/plain
-Content-Length: 450
+Content-Length: 454
 Connection: keep-alive
 
 Headers:
-  header 'Host' is 'echo.example.com:30177'
-  header 'X-Forwarded-For' is '10.1.1.8'
-  header 'X-Real-IP' is '10.1.1.8'
+  header 'Host' is 'echo.example.com'
+  header 'X-Forwarded-For' is '192.168.8.127'
+  header 'X-Real-IP' is '192.168.8.127'
   header 'X-Forwarded-Proto' is 'http'
   header 'X-Forwarded-Host' is 'echo.example.com'
   header 'X-Forwarded-Port' is '80'
   header 'Connection' is 'close'
-  header 'User-Agent' is 'curl/7.81.0'
+  header 'User-Agent' is 'curl/8.11.1'
   header 'Accept' is '*/*'
   header 'My-Cool-Header' is 'my-client-value'
   header 'My-Overwrite-Header' is 'dont-see-this'
@@ -142,16 +147,16 @@ Response Headers `X-Header-Set` and `X-Header-Add` are not present.
 
 Access the test application via filters route
 ```code
-curl -i --resolve echo.example.com:$HTTP_PORT:$NGF_IP http://echo.example.com:$HTTP_PORT/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this" 
+curl -H "Host: echo.example.com" -i http://$NGF_DNS/headers -H "My-Cool-Header:my-client-value" -H "My-Overwrite-Header:dont-see-this"
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Thu, 12 Jun 2025 11:09:02 GMT
+Date: Thu, 06 Nov 2025 10:44:59 GMT
 Content-Type: text/plain
-Content-Length: 495
+Content-Length: 491
 Connection: keep-alive
 X-Header-Add: this-is-the-appended-value
 X-Header-Set: overwritten-value
@@ -160,9 +165,9 @@ Headers:
   header 'Accept-Encoding' is 'compress'
   header 'My-cool-header' is 'my-client-value,this-is-an-appended-value'
   header 'My-Overwrite-Header' is 'this-is-the-only-value'
-  header 'Host' is 'echo.example.com:30344'
-  header 'X-Forwarded-For' is '192.168.2.26'
-  header 'X-Real-IP' is '192.168.2.26'
+  header 'Host' is 'echo.example.com'
+  header 'X-Forwarded-For' is '192.168.8.127'
+  header 'X-Real-IP' is '192.168.8.127'
   header 'X-Forwarded-Proto' is 'http'
   header 'X-Forwarded-Host' is 'echo.example.com'
   header 'X-Forwarded-Port' is '80'

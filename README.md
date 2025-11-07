@@ -14,16 +14,19 @@ Whether you're a beginner looking to learn or an experienced developer seeking t
 
 Prerequisites to use this repository are:
 
-* Running Kubernetes cluster
-* Kubectl
-* [jq](https://github.com/jqlang/jq) 
-* [grpcurl](https://github.com/fullstorydev/grpcurl)
+* Kubernetes tools
+  * [Minikube](https://minikube.sigs.k8s.io/docs/) (if planning to run locally)
+  * [Eksctl](https://docs.aws.amazon.com/eks/latest/eksctl/what-is-eksctl.html) (if planning to use Amazon EKS)
+  * [Kubectl](https://kubernetes.io/docs/tasks/tools/)
+* CLI tools
+  * [jq](https://github.com/jqlang/jq) 
+  * [grpcurl](https://github.com/fullstorydev/grpcurl)
 * Valid NGINX Plus license. You can request a trial license [here](https://www.f5.com/trials/nginx-one)
   * Three files are needed (sample names here are from a trial license): `nginx-one-eval.crt` `nginx-one-eval.key` and `nginx-one-eval.jwt`
 
 ## Deployment
 
-1. [Deploy](/DEPLOYING.md) NGINX Gateway Fabric
+1. [Deploy](/DEPLOYING.md) lab environment
 2. [Deploy](labs) use cases
 
 ## Removal

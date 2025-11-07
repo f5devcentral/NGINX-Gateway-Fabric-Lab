@@ -1,14 +1,13 @@
 #!/bin/bash
 
-NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 
 coffee_v1_count=0
 coffee_v2_count=0
 
 for i in {1..100}
 do
-  response=$(curl -s --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee | grep "Server name" | awk '{print $3}')
+  response=$(curl -s -H "Host: cafe.example.com" http://$NGF_DNS/coffee | grep "Server name" | awk '{print $3}')
   echo -en .
 
   if [[ "$response" == *"-v1-"* ]]; then

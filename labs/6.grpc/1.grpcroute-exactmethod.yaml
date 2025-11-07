@@ -11,6 +11,10 @@ spec:
     allowedRoutes:
       namespaces:
         from: Same
+  infrastructure:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GRPCRoute

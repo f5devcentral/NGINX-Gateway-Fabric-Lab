@@ -64,8 +64,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS        PROGRAMMED   AGE
-gateway   nginx   10.102.76.40   True         5s
+NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
+gateway   nginx   k8s-default-gatewayn-1ae4bba7bf-a0856a7194766114.elb.us-west-2.amazonaws.com   True         23m
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -75,11 +75,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-coffee          ClusterIP   10.107.171.2    <none>        80/TCP         2s
-gateway-nginx   NodePort    10.100.81.10    <none>        80:32604/TCP   15s
-kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP        268d
-tea             ClusterIP   10.96.115.255   <none>        80/TCP         2s
+NAME              TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee            ClusterIP      10.100.235.71    <none>                                                                         80/TCP         30m
+gateway-nginx     LoadBalancer   10.100.164.37    k8s-default-gatewayn-1ae4bba7bf-a0856a7194766114.elb.us-west-2.amazonaws.com   80:32051/TCP   21m
+kubernetes        ClusterIP      10.100.0.1       <none>                                                                         443/TCP        3h54m
+tea               ClusterIP      10.100.138.239   <none>                                                                         80/TCP         30m
 ```
 
 Create the HTTP routes
@@ -99,43 +99,47 @@ coffee   ["cafe.example.com"]   8s
 tea      ["cafe.example.com"]   8s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
+```
+
+Check NGINX Gateway Fabric dataplane loadbalancer DNS
+```code
+echo -e "NGF address: $NGF_DNS"
 ```
 
 Test application access: to access `coffee`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/coffee
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/coffee
 ```
 
 Output should be similar to
 ```code
-Server address: 192.168.36.115:8080
-Server name: coffee-56b44d4c55-nm5rx
-Date: 24/Mar/2025:21:08:19 +0000
+Server address: 192.168.120.151:8080
+Server name: coffee-676c9f8944-cdkbf
+Date: 05/Nov/2025:15:48:32 +0000
 URI: /coffee
-Request ID: 5136f3dd98058fc9edcad13998902e79
+Request ID: 1eaef8a9cfbb20013066b620bdf28aa0
 ```
 
 To access `tea`
 ```code
-curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/tea
+curl -H "Host: cafe.example.com"  http://$NGF_DNS/tea
 ```
 
 Output should be similar to
 ```code
-Server address: 192.168.36.116:8080
-Server name: tea-596697966f-lk2gp
-Date: 24/Mar/2025:21:08:23 +0000
+Server address: 192.168.120.147:8080
+Server name: tea-6fbfdcb95d-djrhh
+Date: 05/Nov/2025:15:48:44 +0000
 URI: /tea
-Request ID: 09603099f3ad42da023a6184019ffbb6
+Request ID: 10fbfa2122d309a7d9a550f585ec07cd
 ```
 
 Delete the lab

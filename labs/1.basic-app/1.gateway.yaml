@@ -9,3 +9,7 @@ spec:
     port: 80
     protocol: HTTP
     hostname: "*.example.com"
+  infrastructure:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip

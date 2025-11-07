@@ -2,7 +2,80 @@
 
 See the [prerequisites](/README.md#getting-started)
 
-## Installing
+## Kubernetes cluster bootstrap (optional)
+
+### Amazon EKS Auto Mode
+
+> [!NOTE]  
+> **This step may be omitted if you are participating in an official AWS + F5 event where resources are pre-provisioned.** For self-paced implementations, please be aware that creating Amazon EKS clusters will result in AWS charges to your account.
+
+1. Make sure you have `aws` (version >= 2.31.29) and `eksctl` (version >= 0.216.0) commands available
+
+```code
+eksctl version
+aws --version
+```
+
+2. Verify that your `aws` CLI is properly configured with the valid AWS account credential
+
+```code
+aws sts get-caller-identity
+```
+
+3. Create your EKS Auto Mode cluster named `f5-nginx-lab` using `eksctl` command (takes up to 20 minutes)
+
+```code
+eksctl create cluster --name=f5-nginx-lab --enable-auto-mode
+```
+
+4. Create default IngressClass and StorageClass objects for the native EKS Auto Mode network and storage integrations
+
+```
+cat <<EOF > default-ingress.yaml
+apiVersion: eks.amazonaws.com/v1
+kind: IngressClassParams
+metadata:
+  name: alb
+spec:
+  scheme: internet-facing
+---
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: alb
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: eks.amazonaws.com/alb
+  parameters:
+    apiGroup: eks.amazonaws.com
+    kind: IngressClassParams
+    name: alb
+EOF
+kubectl apply -f default-ingress.yaml
+
+cat <<EOF > default-storage.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: auto-ebs-sc
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+allowedTopologies:
+- matchLabelExpressions:
+  - key: eks.amazonaws.com/compute-type
+    values:
+    - auto
+provisioner: ebs.csi.eks.amazonaws.com
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: gp3
+  encrypted: "true"
+EOF
+kubectl apply -f default-storage.yaml
+```
+
+## NGINX Gateway Fabric Installation
 
 1. Create NGINX Gateway Fabric namespace
 
@@ -45,14 +118,15 @@ kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gate
 6. Install NGINX Gateway Fabric through its Helm chart (set `nginx.image.tag` to the latest available NGINX Gateway Fabric version)
 
 ```code
-helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
+helm upgrade --install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
   --set nginx.image.tag=2.2.0 \
   --set nginx.plus=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.usage.secretName=nplus-license \
-  --set nginx.service.type=NodePort \
+  --set nginx.service.type=LoadBalancer \
+  --set nginx.service.loadBalancerClass=eks.amazonaws.com/nlb \
   --set nginxGateway.snippetsFilters.enable=true \
   -n nginx-gateway
 ```

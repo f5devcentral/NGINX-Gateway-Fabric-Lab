@@ -22,17 +22,17 @@ Output should be similar to
 
 ```
 NAME                          READY   STATUS    RESTARTS   AGE
-pod/coffee-56b44d4c55-g9gtj   1/1     Running   0          3s
+pod/coffee-676c9f8944-dhtlr   1/1     Running   0          5s
 
-NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-service/coffee       ClusterIP   10.107.232.5   <none>        80/TCP    3s
-service/kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   385d
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/coffee       ClusterIP   10.100.80.201   <none>        80/TCP    6s
+service/kubernetes   ClusterIP   10.100.0.1      <none>        443/TCP   23h
 
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/coffee   1/1     1            1           3s
+deployment.apps/coffee   1/1     1            1           6s
 
 NAME                                DESIRED   CURRENT   READY   AGE
-replicaset.apps/coffee-56b44d4c55   1         1         1       3s
+replicaset.apps/coffee-676c9f8944   1         1         1       6s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -45,11 +45,11 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-56678b747f-rrx4d` is the NGINX Gateway Fabric dataplane pod
+`gateway-nginx-67fb4cdf89-gw27h` is the NGINX Gateway Fabric dataplane pod
 ```
 NAME                             READY   STATUS    RESTARTS   AGE
-coffee-56b44d4c55-g9gtj          1/1     Running   0          37s
-gateway-nginx-56678b747f-rrx4d   1/1     Running   0          13s
+coffee-676c9f8944-dhtlr          1/1     Running   0          4m15s
+gateway-nginx-67fb4cdf89-gw27h   1/1     Running   0          3m56s
 ```
 
 Check the gateway
@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS       PROGRAMMED   AGE
-gateway   nginx   10.97.70.64   True         98s
+NAME      CLASS   ADDRESS                                                                        PROGRAMMED   AGE
+gateway   nginx   k8s-default-gatewayn-df30d9faa1-6e0a7b315da6c9fa.elb.us-west-2.amazonaws.com   True         4m13s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,10 +70,10 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-coffee          ClusterIP   10.107.232.5   <none>        80/TCP         2m17s
-gateway-nginx   NodePort    10.97.70.64    <none>        80:30496/TCP   114s
-kubernetes      ClusterIP   10.96.0.1      <none>        443/TCP        385d
+NAME            TYPE           CLUSTER-IP       EXTERNAL-IP                                                                    PORT(S)        AGE
+coffee          ClusterIP      10.100.80.201    <none>                                                                         80/TCP         4m41s
+gateway-nginx   LoadBalancer   10.100.215.119   k8s-default-gatewayn-df30d9faa1-6e0a7b315da6c9fa.elb.us-west-2.amazonaws.com   80:32652/TCP   4m21s
+kubernetes      ClusterIP      10.100.0.1       <none>                                                                         443/TCP        23h
 ```
 
 Create the SnippetsFilter to set up the FastCGI configuration snippets
@@ -95,10 +95,10 @@ Annotations:  <none>
 API Version:  gateway.nginx.org/v1alpha1
 Kind:         SnippetsFilter
 Metadata:
-  Creation Timestamp:  2025-10-07T11:41:02Z
+  Creation Timestamp:  2025-11-06T11:30:46Z
   Generation:          1
-  Resource Version:    66576310
-  UID:                 e7ff7827-3ea8-42e8-8166-e758ddd6bc40
+  Resource Version:    470527
+  UID:                 99515966-9bcc-4ecb-871a-2fd43dbf8cb7
 Spec:
   Snippets:
     Context:  http.server
@@ -108,7 +108,7 @@ Spec:
 Status:
   Controllers:
     Conditions:
-      Last Transition Time:  2025-10-07T11:41:02Z
+      Last Transition Time:  2025-11-06T11:30:46Z
       Message:               SnippetsFilter is accepted
       Observed Generation:   1
       Reason:                Accepted
@@ -134,27 +134,31 @@ NAME     HOSTNAMES              AGE
 coffee   ["cafe.example.com"]   4s
 ```
 
-Get NGINX Gateway Fabric dataplane instance IP and HTTP port
+Get NGINX Gateway Fabric dataplane loadbalancer DNS
 ```code
-export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
-export HTTP_PORT=`kubectl get svc gateway-nginx -o jsonpath='{.spec.ports[0].nodePort}'`
+export NGF_DNS=`kubectl get svc gateway-nginx -o json|jq '.status.loadBalancer.ingress[0].hostname' -r`
 ```
 
-Check NGINX Gateway Fabric dataplane instance IP and HTTP port
+AWS Elastic Load Balancer takes some minutes to register targets. Wait for it using
 ```code
-echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
+aws elbv2 wait load-balancer-available --load-balancer-arns $(aws elbv2 describe-load-balancers --query 'LoadBalancers[?DNSName==`'"$NGF_DNS"'`].LoadBalancerArn' --output text)
+```
+
+Check NGINX Gateway Fabric dataplane loadbalancer DNS
+```code
+echo -e "NGF address: $NGF_DNS"
 ```
 
 Access the application without providing an authentication token
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT
+curl -i -H "Host: cafe.example.com" http://$NGF_DNS
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 401 Unauthorized
 Server: nginx
-Date: Tue, 07 Oct 2025 11:43:46 GMT
+Date: Thu, 06 Nov 2025 11:32:43 GMT
 Content-Type: text/html
 Content-Length: 172
 Connection: keep-alive
@@ -171,25 +175,25 @@ WWW-Authenticate: Bearer realm="JWT token required"
 
 Access the application again sending a valid JWT token
 ```code
-curl -i --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT -H "Authorization: Bearer `cat token.jwt`"
+curl -i -H "Host: cafe.example.com" http://$NGF_DNS -H "Authorization: Bearer `cat token.jwt`"
 ```
 
 Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Tue, 07 Oct 2025 11:45:36 GMT
+Date: Thu, 06 Nov 2025 11:33:03 GMT
 Content-Type: text/plain
-Content-Length: 156
+Content-Length: 159
 Connection: keep-alive
-Expires: Tue, 07 Oct 2025 11:45:35 GMT
+Expires: Thu, 06 Nov 2025 11:33:02 GMT
 Cache-Control: no-cache
 
-Server address: 10.0.156.110:8080
-Server name: coffee-56b44d4c55-g9gtj
-Date: 07/Oct/2025:11:45:36 +0000
+Server address: 192.168.120.146:8080
+Server name: coffee-676c9f8944-dhtlr
+Date: 06/Nov/2025:11:33:03 +0000
 URI: /
-Request ID: 5afec06d5432b68456477e806cf8a52e
+Request ID: 3c2cc9a94eab4d2b3ac8b364053642d9
 ```
 
 Delete the lab

@@ -6,7 +6,7 @@ spec:
   parentRefs:
   - name: cafe
   hostnames:
-  - cafe.example.com
+  - "cafe.example.com"
   rules:
   - matches:
     - path:
@@ -58,7 +58,7 @@ spec:
   parentRefs:
   - name: cafe
   hostnames:
-  - cafe.example.com
+  - "cafe.example.com"
   rules:
   - matches:
     - path:
