@@ -34,12 +34,12 @@ curl -s https://private-registry.nginx.com/v2/nginx-gateway-fabric/nginx-plus/ta
 
 Note: `<nginx-one-eval.key>` and `<nginx-one-eval.key>` are the path and filename of your `nginx-one-eval.crt` and `nginx-one-eval.crt` files respectively
 
-Pick the latest version (`2.2.0` at the time of writing)
+Pick the latest version (`2.2.1` at the time of writing)
 
 5. Apply NGINX Gateway Fabric custom resources (make sure `ref=` the latest available NGINX Gateway Fabric version)
 
 ```code
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.2.0" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.2.1" | kubectl apply -f -
 ```
 
 6. Install NGINX Gateway Fabric through its Helm chart (set `nginx.image.tag` to the latest available NGINX Gateway Fabric version)
@@ -47,7 +47,7 @@ kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gate
 ```code
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
-  --set nginx.image.tag=2.2.0 \
+  --set nginx.image.tag=2.2.1 \
   --set nginx.plus=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
@@ -67,7 +67,7 @@ Pod should be in the `Running` state
 
 ```code
 NAME                                            READY   STATUS      RESTARTS   AGE
-ngf-nginx-gateway-fabric-f4dc56789-kms4s        1/1     Running     0          5s
+ngf-nginx-gateway-fabric-58cff99cb9-4xpb4       1/1     Running     0          6s
 ```
 
 8. Check NGINX Gateway Fabric logs
@@ -79,15 +79,15 @@ kubectl logs -l app.kubernetes.io/instance=ngf -n nginx-gateway -c nginx-gateway
 Output should be similar to
 
 ```code
-{"level":"info","ts":"2025-10-23T06:25:59Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.2.0","commit":"fbe1774b056af6f0ab7e293dc4ac3e16a26a11dc","date":"2025-10-22T19:04:22Z","dirty":"true"}
-{"level":"info","ts":"2025-10-23T06:25:59Z","msg":"Starting manager"}
-{"level":"info","ts":"2025-10-23T06:25:59Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
-{"level":"info","ts":"2025-10-23T06:25:59Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
-{"level":"info","ts":"2025-10-23T06:25:59Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
-{"level":"info","ts":"2025-10-23T06:25:59Z","msg":"attempting to acquire leader lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election..."}
-{"level":"info","ts":"2025-10-23T06:25:59Z","msg":"successfully acquired lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
-{"level":"info","ts":"2025-10-23T06:25:59Z","logger":"telemetryJob","msg":"Starting cronjob"}
-{"level":"info","ts":"2025-10-23T06:25:59Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":15}
+{"level":"info","ts":"2025-12-10T13:46:26Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.2.1","commit":"5e464c708a904f68cd26ffce695e4f8c61c66ed8","date":"2025-11-13T17:31:53Z","dirty":"true"}
+{"level":"info","ts":"2025-12-10T13:46:26Z","msg":"Starting manager"}
+{"level":"info","ts":"2025-12-10T13:46:26Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
+{"level":"info","ts":"2025-12-10T13:46:26Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
+{"level":"info","ts":"2025-12-10T13:46:26Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
+{"level":"info","ts":"2025-12-10T13:46:27Z","msg":"attempting to acquire leader lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election..."}
+{"level":"info","ts":"2025-12-10T13:46:27Z","msg":"successfully acquired lease nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
+{"level":"info","ts":"2025-12-10T13:46:27Z","logger":"telemetryJob","msg":"Starting cronjob"}
+{"level":"info","ts":"2025-12-10T13:46:27Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":2}
 ```
 
 9. Check Kubernetes service status
@@ -99,8 +99,8 @@ kubectl get svc -n nginx-gateway
 NGINX Gateway Fabric control plane should be listening on TCP port 443
 
 ```code
-NAME                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-ngf-nginx-gateway-fabric   ClusterIP   10.108.84.92   <none>        443/TCP   9m44s
+NAME                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+ngf-nginx-gateway-fabric   ClusterIP   10.100.138.150   <none>        443/TCP   55s
 ```
 
 10. Check the `gatewayclass`
@@ -133,11 +133,11 @@ kubectl delete namespace nginx-gateway
 3. Remove all CRDs
 
 ```code
-kubectl delete -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.2.0/deploy/crds.yaml
+kubectl delete -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.2.1/deploy/crds.yaml
 ```
 
 4. Remove the Gateway API resources
 
 ```code
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.2.0" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.2.1" | kubectl delete -f -
 ```
