@@ -46,12 +46,12 @@ kubectl apply -f 1.gateway.yaml
 ```
 
 Check the NGINX Gateway Fabric dataplane pod status
-```
+```code
 kubectl get pods
 ```
 
 `gateway-nginx-7b79d89c-p8v8v` is the NGINX Gateway Fabric dataplane pod
-```
+```code
 NAME                            READY   STATUS    RESTARTS   AGE
 coffee-56b44d4c55-gdxkc         1/1     Running   0          89s
 gateway-nginx-7b79d89c-p8v8v    1/1     Running   0          14s
