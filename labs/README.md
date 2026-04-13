@@ -23,5 +23,6 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 7](7.fastcgi) - Publishing a FastCGI application using SnippetsFilter
 - [Lab 8](8.auth-jwt) - JWT authentication using SnippetsFilter
 - [Lab 9](9.rate-limit) - Rate limiting
+- [Lab 10](10.inference-extensions) - Gateway API Inference Extension
 
 The official NGINX Gateway Fabric repository provides additional [examples](https://github.com/nginx/nginx-gateway-fabric/tree/main/examples)
