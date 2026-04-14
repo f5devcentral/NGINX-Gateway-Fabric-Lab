@@ -21,7 +21,7 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 5](5.traffic-splitting) - Traffic splitting
 - [Lab 6](6.grpc) - gRPC support
 - [Lab 7](7.fastcgi) - Publishing a FastCGI application using SnippetsFilter
-- [Lab 8](8.auth-jwt) - JWT authentication using SnippetsFilter
+- [Lab 8](8.auth-jwt) - JWT authentication
 - [Lab 9](9.rate-limit) - Rate limiting
 - [Lab 10](10.inference-extensions) - Gateway API Inference Extension
 

@@ -17,8 +17,8 @@ spec:
       - type: ExtensionRef
         extensionRef:
           group: gateway.nginx.org
-          kind: SnippetsFilter
-          name: auth-jwt
+          kind: AuthenticationFilter
+          name: jwt-auth-file
     backendRefs:
     - name: coffee
       port: 80

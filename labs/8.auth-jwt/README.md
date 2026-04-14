@@ -1,6 +1,6 @@
-# Enforcing JWT authentication using SnippetsFilter
+# Enforcing JWT authentication
 
-This use case shows how to enforce JWT authentication through SnippetsFilter
+This use case shows how to enforce JWT authentication
 
 `cd` into the lab directory
 ```code
@@ -20,19 +20,19 @@ kubectl get all
 
 Output should be similar to
 
-```
+```code
 NAME                          READY   STATUS    RESTARTS   AGE
-pod/coffee-56b44d4c55-g9gtj   1/1     Running   0          3s
+pod/coffee-654ddf664b-f7hp2   1/1     Running   0          9s
 
-NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-service/coffee       ClusterIP   10.107.232.5   <none>        80/TCP    3s
-service/kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   385d
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+service/coffee       ClusterIP   10.99.241.145   <none>        80/TCP    9s
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   573d
 
 NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/coffee   1/1     1            1           3s
+deployment.apps/coffee   1/1     1            1           9s
 
 NAME                                DESIRED   CURRENT   READY   AGE
-replicaset.apps/coffee-56b44d4c55   1         1         1       3s
+replicaset.apps/coffee-654ddf664b   1         1         1       9s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -41,15 +41,15 @@ kubectl apply -f 1.gateway.yaml
 ```
 
 Check the NGINX Gateway Fabric dataplane pod status
-```
+```code
 kubectl get pods
 ```
 
-`gateway-nginx-56678b747f-rrx4d` is the NGINX Gateway Fabric dataplane pod
-```
+`gateway-nginx-6558bbcfdf-pd2lx` is the NGINX Gateway Fabric dataplane pod
+```code
 NAME                             READY   STATUS    RESTARTS   AGE
-coffee-56b44d4c55-g9gtj          1/1     Running   0          37s
-gateway-nginx-56678b747f-rrx4d   1/1     Running   0          13s
+coffee-654ddf664b-f7hp2          1/1     Running   0          2m33s
+gateway-nginx-6558bbcfdf-pd2lx   2/2     Running   0          20s
 ```
 
 Check the gateway
@@ -59,8 +59,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS       PROGRAMMED   AGE
-gateway   nginx   10.97.70.64   True         98s
+NAME      CLASS   ADDRESS          PROGRAMMED   AGE
+gateway   nginx   10.101.164.103   True         41s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -70,46 +70,54 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-coffee          ClusterIP   10.107.232.5   <none>        80/TCP         2m17s
-gateway-nginx   NodePort    10.97.70.64    <none>        80:30496/TCP   114s
-kubernetes      ClusterIP   10.96.0.1      <none>        443/TCP        385d
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+coffee          ClusterIP   10.99.241.145    <none>        80/TCP         3m4s
+gateway-nginx   NodePort    10.101.164.103   <none>        80:30968/TCP   52s
+kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        573d
 ```
 
-Create the SnippetsFilter to set up the FastCGI configuration snippets
+Create the JWKS Secret
 ```code
-kubectl apply -f 2.snippetsfilter-jwtauth.yaml
+kubectl create secret generic jwks-secret --from-file=auth=secret.jwks
 ```
 
-Check the SnippetsFilter
+Create the AuthenticationFilter 
 ```code
-kubectl describe snippetsfilter auth-jwt
+kubectl apply -f 2.authenticationfilter.yaml
+```
+
+Check the AuthenticationFilter
+```code
+kubectl describe authenticationfilter jwt-auth-file
 ```
 
 Output should be similar to
 ```code
-Name:         auth-jwt
+Name:         jwt-auth-file
 Namespace:    default
 Labels:       <none>
 Annotations:  <none>
 API Version:  gateway.nginx.org/v1alpha1
-Kind:         SnippetsFilter
+Kind:         AuthenticationFilter
 Metadata:
-  Creation Timestamp:  2025-10-07T11:41:02Z
+  Creation Timestamp:  2026-04-13T14:08:47Z
   Generation:          1
-  Resource Version:    66576310
-  UID:                 e7ff7827-3ea8-42e8-8166-e758ddd6bc40
+  Resource Version:    109754523
+  UID:                 a7445b30-5f54-45dc-8b77-b3c03023caf3
 Spec:
-  Snippets:
-    Context:  http.server
-    Value:    location = /_auth/_jwks_uri { internal;return 200 '{"keys":[{"k":"ZmFudGFzdGljand0","kty":"oct","kid":"0001"}]}'; }
-    Context:  http.server.location
-    Value:    auth_jwt "JWT token required";auth_jwt_type signed;auth_jwt_key_request /_auth/_jwks_uri;
+  Jwt:
+    File:
+      Secret Ref:
+        Name:   jwks-secret
+    Key Cache:  1h
+    Realm:      nginx-gateway
+    Source:     File
+  Type:         JWT
 Status:
   Controllers:
     Conditions:
-      Last Transition Time:  2025-10-07T11:41:02Z
-      Message:               SnippetsFilter is accepted
+      Last Transition Time:  2026-04-13T14:08:48Z
+      Message:               The AuthenticationFilter is accepted
       Observed Generation:   1
       Reason:                Accepted
       Status:                True
@@ -118,7 +126,7 @@ Status:
 Events:                      <none>
 ```
 
-Create the HTTP route that references the SnippetsFilter
+Create the HTTP route that references the AuthenticationFilter
 ```code
 kubectl apply -f 3.httproute.yaml
 ```
@@ -131,7 +139,7 @@ kubectl get httproute
 Output should be similar to
 ```code
 NAME     HOSTNAMES              AGE
-coffee   ["cafe.example.com"]   4s
+coffee   ["cafe.example.com"]   3s
 ```
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
@@ -196,4 +204,5 @@ Delete the lab
 
 ```code
 kubectl delete -f .
+kubectl delete secret jwks-secret
 ```
