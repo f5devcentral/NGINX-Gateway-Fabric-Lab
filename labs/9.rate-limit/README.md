@@ -22,22 +22,21 @@ Output should be similar to
 
 ```
 NAME                                READY   STATUS    RESTARTS   AGE
-pod/coffee-56b44d4c55-gdxkc         1/1     Running   0          41s
-pod/grpc-backend-68ff5cb6c9-c565t   1/1     Running   0          40s
+pod/coffee-654ddf664b-cd2tk         1/1     Running   0          3s
+pod/grpc-backend-679d44cbbf-bw6rf   1/1     Running   0          2s
 
-NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)           AGE
-service/coffee         ClusterIP   10.97.137.125   <none>        80/TCP            41s
-service/grpc-backend   ClusterIP   10.109.137.38   <none>        8080/TCP          40s
-service/kubernetes     ClusterIP   10.96.0.1       <none>        443/TCP           506d
-service/nginx-svc      ClusterIP   10.101.127.99   <none>        80/TCP,8080/TCP   13d
+NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+service/coffee         ClusterIP   10.102.135.46    <none>        80/TCP     3s
+service/grpc-backend   ClusterIP   10.102.225.206   <none>        8080/TCP   3s
+service/kubernetes     ClusterIP   10.96.0.1        <none>        443/TCP    573d
 
 NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/coffee         1/1     1            1           41s
-deployment.apps/grpc-backend   1/1     1            1           40s
+deployment.apps/coffee         1/1     1            1           3s
+deployment.apps/grpc-backend   1/1     1            1           3s
 
 NAME                                      DESIRED   CURRENT   READY   AGE
-replicaset.apps/coffee-56b44d4c55         1         1         1       41s
-replicaset.apps/grpc-backend-68ff5cb6c9   1         1         1       40s
+replicaset.apps/coffee-654ddf664b         1         1         1       3s
+replicaset.apps/grpc-backend-679d44cbbf   1         1         1       3s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace and a `RateLimitPolicy`
@@ -50,12 +49,12 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`gateway-nginx-7b79d89c-p8v8v` is the NGINX Gateway Fabric dataplane pod
+`gateway-nginx-6558bbcfdf-rksdl` is the NGINX Gateway Fabric dataplane pod
 ```code
-NAME                            READY   STATUS    RESTARTS   AGE
-coffee-56b44d4c55-gdxkc         1/1     Running   0          89s
-gateway-nginx-7b79d89c-p8v8v    1/1     Running   0          14s
-grpc-backend-68ff5cb6c9-c565t   1/1     Running   0          88s
+NAME                             READY   STATUS    RESTARTS   AGE
+coffee-654ddf664b-cd2tk          1/1     Running   0          42s
+gateway-nginx-6558bbcfdf-rksdl   2/2     Running   0          18s
+grpc-backend-679d44cbbf-bw6rf    1/1     Running   0          41s
 ```
 
 Check the gateway
@@ -65,8 +64,8 @@ kubectl get gateway
 
 Output should be similar to
 ```code
-NAME      CLASS   ADDRESS       PROGRAMMED   AGE
-gateway   nginx   10.97.59.36   True         31s
+NAME      CLASS   ADDRESS          PROGRAMMED   AGE
+gateway   nginx   10.104.194.160   True         49s
 ```
 
 Check the NGINX Gateway Fabric Service
@@ -76,12 +75,11 @@ kubectl get service
 
 `gateway-nginx` is the NGINX Gateway Fabric dataplane service
 ```code
-NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)           AGE
-coffee          ClusterIP   10.97.137.125   <none>        80/TCP            13m
-gateway-nginx   NodePort    10.97.59.36     <none>        80:32700/TCP      12m
-grpc-backend    ClusterIP   10.109.137.38   <none>        8080/TCP          13m
-kubernetes      ClusterIP   10.96.0.1       <none>        443/TCP           506d
-nginx-svc       ClusterIP   10.101.127.99   <none>        80/TCP,8080/TCP   13d
+NAME            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+coffee          ClusterIP   10.102.135.46    <none>        80/TCP         79s
+gateway-nginx   NodePort    10.104.194.160   <none>        80:30601/TCP   55s
+grpc-backend    ClusterIP   10.102.225.206   <none>        8080/TCP       79s
+kubernetes      ClusterIP   10.96.0.1        <none>        443/TCP        573d
 ```
 
 Check the rate limit policy set at the gateway level
@@ -92,7 +90,7 @@ kubectl get ratelimitpolicy
 Output should be similar to
 ```code
 NAME                 AGE
-gateway-rate-limit   107s
+gateway-rate-limit   68s
 ```
 
 Describe the `RateLimitPolicy`: it enforces a rate limit of 10 requests per second at the gateway level
@@ -109,10 +107,10 @@ Annotations:  <none>
 API Version:  gateway.nginx.org/v1alpha1
 Kind:         RateLimitPolicy
 Metadata:
-  Creation Timestamp:  2026-02-05T17:27:25Z
+  Creation Timestamp:  2026-04-13T14:16:37Z
   Generation:          1
-  Resource Version:    94045758
-  UID:                 dadb9661-dde0-429f-986a-67b797e4f97a
+  Resource Version:    109755949
+  UID:                 1c555adc-cca8-4fda-9d55-44c1fd9e258b
 Spec:
   Rate Limit:
     Local:
@@ -120,6 +118,7 @@ Spec:
         Key:        $binary_remote_addr
         Rate:       10r/s
         Zone Size:  10m
+    Reject Code:    429
   Target Refs:
     Group:  gateway.networking.k8s.io
     Kind:   Gateway
@@ -132,7 +131,7 @@ Status:
       Name:       gateway
       Namespace:  default
     Conditions:
-      Last Transition Time:  2026-02-05T17:27:26Z
+      Last Transition Time:  2026-04-13T14:16:37Z
       Message:               The Policy is accepted
       Observed Generation:   1
       Reason:                Accepted
@@ -155,7 +154,7 @@ kubectl get httproute
 Output should be similar to
 ```code
 NAME     HOSTNAMES              AGE
-coffee   ["cafe.example.com"]   82s
+coffee   ["cafe.example.com"]   2s
 ```
 
 Check the gRPC route
@@ -167,7 +166,7 @@ kubectl get grpcroute
 Output should be similar to
 ```code
 NAME         HOSTNAMES              AGE
-grpc-route   ["grpc.example.com"]   113s
+grpc-route   ["grpc.example.com"]   11s
 ```
 
 Create the `RateLimitPolicy` attached to the coffee `HTTPRoute` and the grpc-route `GRPCRoute`
@@ -183,8 +182,8 @@ kubectl get ratelimitpolicy
 Output should be similar to
 ```code
 NAME                 AGE
-gateway-rate-limit   8m24s
-route-rate-limit     81s
+gateway-rate-limit   116s
+route-rate-limit     3s
 ```
 
 Describe the `RateLimitPolicy` applied at the `HTTPRoute` and `GRPCRoute` level
@@ -201,10 +200,10 @@ Annotations:  <none>
 API Version:  gateway.nginx.org/v1alpha1
 Kind:         RateLimitPolicy
 Metadata:
-  Creation Timestamp:  2026-02-05T17:34:28Z
+  Creation Timestamp:  2026-04-13T14:18:30Z
   Generation:          1
-  Resource Version:    94046926
-  UID:                 2edd598e-fdc2-4c67-8742-13d409c8137d
+  Resource Version:    109756292
+  UID:                 b90120c4-ae79-41eb-ae16-92fa1ee28d73
 Spec:
   Rate Limit:
     Local:
@@ -213,6 +212,7 @@ Spec:
         Key:        $binary_remote_addr
         Rate:       1r/s
         Zone Size:  10m
+    Reject Code:    429
   Target Refs:
     Group:  gateway.networking.k8s.io
     Kind:   HTTPRoute
@@ -228,7 +228,7 @@ Status:
       Name:       coffee
       Namespace:  default
     Conditions:
-      Last Transition Time:  2026-02-05T17:34:29Z
+      Last Transition Time:  2026-04-13T14:18:31Z
       Message:               The Policy is accepted
       Observed Generation:   1
       Reason:                Accepted
@@ -241,7 +241,7 @@ Status:
       Name:       grpc-route
       Namespace:  default
     Conditions:
-      Last Transition Time:  2026-02-05T17:34:29Z
+      Last Transition Time:  2026-04-13T14:18:31Z
       Message:               The Policy is accepted
       Observed Generation:   1
       Reason:                Accepted

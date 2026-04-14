@@ -1,0 +1,13 @@
+apiVersion: gateway.nginx.org/v1alpha1
+kind: AuthenticationFilter
+metadata:
+  name: jwt-auth-file
+spec:
+  type: JWT
+  jwt:
+    source: File
+    file:
+      secretRef:
+        name: jwks-secret
+    realm: "nginx-gateway"
+    keyCache: "1h"
