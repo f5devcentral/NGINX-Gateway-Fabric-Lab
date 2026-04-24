@@ -4,7 +4,7 @@ This use case shows how to optimize traffic routing to self-hosting Generative A
 
 `cd` into the lab directory
 ```code
-~/NGINX-Gateway-Fabric-Lab/labs/10.inference-extensions
+cd ~/NGINX-Gateway-Fabric-Lab/labs/10.inference-extensions
 ```
 
 Deploy a sample model server
