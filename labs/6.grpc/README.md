@@ -228,7 +228,7 @@ Output should be similar to
 
 Test the application sending a request with HTTP header `regexHeader: grpc-header-a`
 ```code
-grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'grpcRegex: grpc-header-a' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
+grpcurl -plaintext -proto grpc.proto -authority bar.com -d '{"name": "grpc-header-a"}' -H 'headerRegex: grpc-header-a' ${NGF_IP}:${HTTP_PORT} helloworld.Greeter/SayHello
 ```
 
 The request has been routed to pod `grpc-infra-backend-2`
