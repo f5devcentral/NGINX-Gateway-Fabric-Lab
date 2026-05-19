@@ -47,9 +47,10 @@ kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/infe
 
 ```code
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
-  --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
+  --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus-f5waf \
   --set nginx.image.tag=2.6.0 \
   --set nginx.plus=true \
+  --set nginx.config.waf.enable=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.usage.secretName=nplus-license \
