@@ -24,10 +24,27 @@ customers-856f7f8644-rmzf8   1/1     Running   0          10s
 tea-75bc9f4b6d-8bh4v         1/1     Running   0          10s
 ```
 
-Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace, with WAF enabled
-
+Deploy the syslog service to receive F5 WAF for NGINX security violations logs
 ```bash
-kubectl apply -f 1.gateway.yaml
+kubectl apply -f 1.syslog.yaml
+```
+
+Check the syslog pod status
+```bash
+kubectl get pods
+```
+
+Output should be similar to
+```bash
+NAME                             READY   STATUS    RESTARTS   AGE
+customers-856f7f8644-rmzf8       1/1     Running   0          155m
+syslog-5fb46bc5c-xll4h           1/1     Running   0          29s
+tea-75bc9f4b6d-8bh4v             1/1     Running   0          155m
+```
+
+Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace, with WAF enabled
+```bash
+kubectl apply -f 2.gateway.yaml
 ```
 
 Check the NGINX Gateway Fabric dataplane pod status
@@ -40,6 +57,7 @@ The `gateway-nginx-65d8cf589b-8kf8h` pod is the NGINX Gateway Fabric dataplane
 NAME                           READY   STATUS    RESTARTS   AGE
 customers-856f7f8644-rmzf8     1/1     Running   0          35s
 gateway-nginx-cddb6676-6dwwk   3/4     Running   0          12s
+syslog-5fb46bc5c-xll4h         1/1     Running   0          29s
 tea-75bc9f4b6d-8bh4v           1/1     Running   0          35s
 ```
 
@@ -70,7 +88,7 @@ tea             ClusterIP   10.101.32.95     <none>        80/TCP         52s
 
 Create the HTTP routes
 ```bash
-kubectl apply -f 2.httproute.yaml
+kubectl apply -f 3.httproute.yaml
 ```
 
 Check the HTTP routes
@@ -92,15 +110,15 @@ Create the WAF policy definitions `ConfigMap`. Two policies are defined:
 
 The bundle server will compile these into `.tgz` bundles at startup.
 ```bash
-kubectl apply -f 3.policies.yaml
+kubectl apply -f 4.policies.yaml
 ```
 
 Deploy the WAF policy bundle server: it compiles both policies and serves them over HTTP
 ```bash
-kubectl apply -f 4.bundleserver.yaml
+kubectl apply -f 5.bundleserver.yaml
 ```
 
-Wait for deployment to complete
+Wait for deployment and policy compilation to complete
 ```bash
 kubectl wait --for=condition=Available deployment/bundle-server --timeout=120s
 ```
@@ -116,12 +134,13 @@ NAME                             READY   STATUS    RESTARTS   AGE
 bundle-server-6849977c89-hz6ff   1/1     Running   0          3m53s
 customers-856f7f8644-rmzf8       1/1     Running   0          5m25s
 gateway-nginx-cddb6676-6dwwk     4/4     Running   0          5m2s
+syslog-5fb46bc5c-xll4h           1/1     Running   0          5m10s
 tea-75bc9f4b6d-8bh4v             1/1     Running   0          5m25s
 ```
 
 Apply the `attack-signatures-blocking` WAF policy at the `Gateway` level. This policy blocks common attack signatures such as cross-site scripting (XSS) and SQL injection
 ```bash
-kubectl apply -f 5.applywaf.yaml
+kubectl apply -f 6.applywaf.yaml
 ```
 
 Verify the WAF policy has been accepted and programmed
@@ -129,7 +148,7 @@ Verify the WAF policy has been accepted and programmed
 kubectl describe wafpolicy gateway-base-protection
 ```
 
-All conditions should be set to `true` and output should be similar to
+All conditions should be set to `True` and output should be similar to
 ```bash
 Name:         gateway-base-protection
 Namespace:    default
@@ -199,6 +218,11 @@ Check NGINX Gateway Fabric dataplane instance IP and HTTP port
 echo -e "NGF address: $NGF_IP\nHTTP port  : $HTTP_PORT"
 ```
 
+In a separate shell display the syslog output
+```bash
+kubectl exec -it "$(kubectl get pod -l app=syslog -o jsonpath='{.items[0].metadata.name}')" -- tail -f /var/log/messages
+```
+
 Test application access
 ```bash
 curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP http://cafe.example.com:$HTTP_PORT/customers
@@ -225,6 +249,11 @@ Output should be similar to
 <html><head><title>Request Rejected</title></head><body>The requested URL was rejected. Please consult with your administrator.<br><br>Your support ID is: 14384284410244417109<br><br><a href='javascript:history.back();'>[Go Back]</a></body></html>
 ```
 
+`syslog` should show the security violation being logged, similar to
+```bash
+May 19 15:59:59 gateway-nginx-cddb6676-dz668 ASM:attack_type="Non-browser Client,Abuse of Functionality,Cross Site Scripting (XSS),Other Application Activity",blocking_exception_reason="N/A",date_time="2026-05-19 15:59:58",dest_port="80",[...]
+```
+
 Since the `attack-signatures-blocking` policy is applied at the gateway level, all routes are protected by default
 ```bash
 curl --resolve cafe.example.com:$HTTP_PORT:$NGF_IP "http://cafe.example.com:$HTTP_PORT/tea?x=</script>"
@@ -235,9 +264,11 @@ Output should be similar to
 <html><head><title>Request Rejected</title></head><body>The requested URL was rejected. Please consult with your administrator.<br><br>Your support ID is: 3293264971173386843<br><br><a href='javascript:history.back();'>[Go Back]</a></body></html>
 ```
 
+`syslog` should show the security violation being logged
+
 Apply a route-level override using the `dataguard-blocking` WAF policy
 ```bash
-kubectl apply -f 6.routewafoverride.yaml
+kubectl apply -f 7.routewafoverride.yaml
 ```
 
 Wait for the policy to get to the `Programmed` state
@@ -258,6 +289,9 @@ Name: John Doe
 Credit Card: ***************1111
 SSN: *******6789
 ```
+
+`syslog` should show the security violation being logged, similar to
+
 
 Delete the lab
 
