@@ -1,0 +1,18 @@
+apiVersion: gateway.nginx.org/v1alpha1
+kind: WAFPolicy
+metadata:
+  name: gateway-base-protection
+spec:
+  type: HTTP
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: gateway
+  policySource:
+    httpSource:
+      url: http://bundle-server.default.svc.cluster.local/attack-signatures-blocking.tgz
+  securityLogs:
+  - destination:
+      type: stderr
+    logSource:
+      defaultProfile: log_blocked
