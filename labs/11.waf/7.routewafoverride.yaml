@@ -13,6 +13,8 @@ spec:
       url: http://bundle-server.default.svc.cluster.local/dataguard-blocking.tgz
   securityLogs:
   - destination:
-      type: stderr
+      type: syslog
+      syslog:
+        server: syslog-svc:514
     logSource:
       defaultProfile: log_all
