@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waf-policy-definitions
+data:
+  attack-signatures-blocking.json: |
+    {
+      "policy": {
+        "name": "attack-signatures-blocking",
+        "template": {
+          "name": "POLICY_TEMPLATE_NGINX_BASE"
+        },
+        "applicationLanguage": "utf-8",
+        "enforcementMode": "blocking",
+        "signature-sets": [
+          {
+            "name": "All Signatures",
+            "block": true,
+            "alarm": true
+          }
+        ]
+      }
+    }
+  dataguard-blocking.json: |
+    {
+      "policy": {
+        "name": "dataguard-blocking",
+        "template": {
+          "name": "POLICY_TEMPLATE_NGINX_BASE"
+        },
+        "applicationLanguage": "utf-8",
+        "enforcementMode": "blocking",
+        "data-guard": {
+          "enabled": true,
+          "creditCardNumbers": true,
+          "usSocialSecurityNumbers": true
+        }
+      }
+    }
