@@ -1,9 +1,0 @@
-apiVersion: gateway.nginx.org/v1alpha1
-kind: SnippetsFilter
-metadata:
-  name: active-health-check
-spec:
-  snippets:
-  - context: http.server.location
-    value: |
-      health_check interval=5s fails=2 passes=2 uri=/;
