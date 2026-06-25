@@ -25,6 +25,5 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 9](9.rate-limit) - Rate limiting
 - [Lab 10](10.inference-extensions) - Gateway API Inference Extension
 - [Lab 11](11.waf) - F5 WAF for NGINX
-- [Lab 12](12.openid-connect) - OpenID Conncet authentication
 
 The official NGINX Gateway Fabric repository provides additional [examples](https://github.com/nginx/nginx-gateway-fabric/tree/main/examples)
