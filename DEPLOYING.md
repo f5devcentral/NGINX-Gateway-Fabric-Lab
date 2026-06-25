@@ -143,5 +143,5 @@ kubectl delete -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v
 
 ```code
 kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.6.5" | kubectl delete -f -
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.6.5" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.6.5" | kubectl delete -f -
 ```
