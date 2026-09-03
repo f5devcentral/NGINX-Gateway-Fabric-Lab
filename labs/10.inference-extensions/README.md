@@ -13,7 +13,7 @@ Deploy a sample model server
 > The vLLM simulator model server does not use GPUs and is ideal for test/development environments. This sample is configured to simulate the meta-llama/LLama-3.1-8B-Instruct model.
 
 ```code
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/raw/release-1.1/config/manifests/vllm/sim-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api-inference-extension/refs/tags/v1.5.0/config/manifests/vllm/sim-deployment.yaml
 ```
 
 Verify that all pods are in the `Running` state
@@ -23,18 +23,22 @@ kubectl get pods
 
 Output should be similar to
 ```code
-NAME                                       READY   STATUS    RESTARTS   AGE
-vllm-llama3-8b-instruct-5d4fd78fd5-8tfwh   1/1     Running   0          57s
-vllm-llama3-8b-instruct-5d4fd78fd5-c7sn6   1/1     Running   0          57s
-vllm-llama3-8b-instruct-5d4fd78fd5-mjf4d   1/1     Running   0          57s
+NAME                              READY   STATUS    RESTARTS   AGE
+vllm-qwen3-32b-7955b44454-4hbrr   1/1     Running   0          16s
+vllm-qwen3-32b-7955b44454-gshsv   1/1     Running   0          16s
+vllm-qwen3-32b-7955b44454-rmdkw   1/1     Running   0          16s
 ```
 
 Deploy the InferencePool and Endpoint Picker Extension
 ```code
-export IGW_CHART_VERSION=v1.1.0
-helm install vllm-llama3-8b-instruct \
-  --set inferencePool.modelServers.matchLabels.app=vllm-llama3-8b-instruct \
+export IGW_CHART_VERSION=v1.5.0
+helm install vllm-qwen3-32b \
+  --dependency-update \
+  --set inferencePool.modelServers.matchLabels.app=vllm-qwen3-32b \
   --version $IGW_CHART_VERSION \
+  --set inferenceExtension.resources.requests.cpu=100m \
+  --set inferenceExtension.resources.requests.memory=512Mi \
+  --set inferenceExtension.resources.limits.memory=2Gi \
   oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
 ```
 
@@ -45,11 +49,11 @@ kubectl get pods
 
 Output should be similar to
 ```code
-NAME                                           READY   STATUS    RESTARTS   AGE
-vllm-llama3-8b-instruct-5d4fd78fd5-8tfwh       1/1     Running   0          76s
-vllm-llama3-8b-instruct-5d4fd78fd5-c7sn6       1/1     Running   0          76s
-vllm-llama3-8b-instruct-5d4fd78fd5-mjf4d       1/1     Running   0          76s
-vllm-llama3-8b-instruct-epp-7d945bdcb5-ltbfr   1/1     Running   0          8s
+NAME                                  READY   STATUS    RESTARTS   AGE
+vllm-qwen3-32b-7955b44454-4hbrr       1/1     Running   0          7m6s
+vllm-qwen3-32b-7955b44454-gshsv       1/1     Running   0          7m6s
+vllm-qwen3-32b-7955b44454-rmdkw       1/1     Running   0          7m6s
+vllm-qwen3-32b-epp-789599f8c4-777lv   1/1     Running   0          14s
 ```
 
 Create the gateway object. This deploys the NGINX Gateway Fabric dataplane pod in the current namespace
@@ -62,14 +66,14 @@ Check the NGINX Gateway Fabric dataplane pod status
 kubectl get pods
 ```
 
-`inference-gateway-nginx-5d65c94dcf-vwr6x` is the NGINX Gateway Fabric dataplane pod
+`inference-gateway-nginx-57c68597df-bkht2` is the NGINX Gateway Fabric dataplane pod
 ```code
-NAME                                           READY   STATUS    RESTARTS   AGE
-inference-gateway-nginx-5d65c94dcf-vwr6x       2/2     Running   0          17s
-vllm-llama3-8b-instruct-5d4fd78fd5-8tfwh       1/1     Running   0          112s
-vllm-llama3-8b-instruct-5d4fd78fd5-c7sn6       1/1     Running   0          112s
-vllm-llama3-8b-instruct-5d4fd78fd5-mjf4d       1/1     Running   0          112s
-vllm-llama3-8b-instruct-epp-7d945bdcb5-ltbfr   1/1     Running   0          44s
+NAME                                       READY   STATUS    RESTARTS   AGE
+inference-gateway-nginx-57c68597df-bkht2   4/4     Running   0          69s
+vllm-qwen3-32b-7955b44454-4hbrr            1/1     Running   0          8m29s
+vllm-qwen3-32b-7955b44454-gshsv            1/1     Running   0          8m29s
+vllm-qwen3-32b-7955b44454-rmdkw            1/1     Running   0          8m29s
+vllm-qwen3-32b-epp-789599f8c4-777lv        1/1     Running   0          97s
 ```
 
 Check the gateway
@@ -78,8 +82,8 @@ kubectl get gateway
 ```
 Output should be similar to
 ```code
-NAME                CLASS   ADDRESS        PROGRAMMED   AGE
-inference-gateway   nginx   10.98.96.164   True         26s
+NAME                CLASS   ADDRESS          PROGRAMMED   AGE
+inference-gateway   nginx   10.105.218.210   True         81s
 ```
 
 Describe the gateway
@@ -96,10 +100,10 @@ Annotations:  <none>
 API Version:  gateway.networking.k8s.io/v1
 Kind:         Gateway
 Metadata:
-  Creation Timestamp:  2026-04-13T13:11:21Z
+  Creation Timestamp:  2026-09-03T07:22:43Z
   Generation:          1
-  Resource Version:    109744819
-  UID:                 be75068b-501b-4b03-816c-540a0163ca16
+  Resource Version:    225379189
+  UID:                 fb97639d-9135-4965-983f-036743265ec4
 Spec:
   Gateway Class Name:  nginx
   Listeners:
@@ -111,16 +115,17 @@ Spec:
     Protocol:  HTTP
 Status:
   Addresses:
-    Type:   IPAddress
-    Value:  10.98.96.164
+    Type:                  IPAddress
+    Value:                 10.105.218.210
+  Attached Listener Sets:  0
   Conditions:
-    Last Transition Time:  2026-04-13T13:11:21Z
+    Last Transition Time:  2026-09-03T07:22:43Z
     Message:               The Gateway is accepted
     Observed Generation:   1
     Reason:                Accepted
     Status:                True
     Type:                  Accepted
-    Last Transition Time:  2026-04-13T13:11:21Z
+    Last Transition Time:  2026-09-03T07:22:43Z
     Message:               The Gateway is programmed
     Observed Generation:   1
     Reason:                Programmed
@@ -129,25 +134,25 @@ Status:
   Listeners:
     Attached Routes:  0
     Conditions:
-      Last Transition Time:  2026-04-13T13:11:21Z
-      Message:               The Listener is accepted
-      Observed Generation:   1
-      Reason:                Accepted
-      Status:                True
-      Type:                  Accepted
-      Last Transition Time:  2026-04-13T13:11:21Z
+      Last Transition Time:  2026-09-03T07:22:43Z
       Message:               The Listener is programmed
       Observed Generation:   1
       Reason:                Programmed
       Status:                True
       Type:                  Programmed
-      Last Transition Time:  2026-04-13T13:11:21Z
+      Last Transition Time:  2026-09-03T07:22:43Z
+      Message:               The Listener is accepted
+      Observed Generation:   1
+      Reason:                Accepted
+      Status:                True
+      Type:                  Accepted
+      Last Transition Time:  2026-09-03T07:22:43Z
       Message:               All references are resolved
       Observed Generation:   1
       Reason:                ResolvedRefs
       Status:                True
       Type:                  ResolvedRefs
-      Last Transition Time:  2026-04-13T13:11:21Z
+      Last Transition Time:  2026-09-03T07:22:43Z
       Message:               No conflicts
       Observed Generation:   1
       Reason:                NoConflicts
@@ -175,7 +180,7 @@ kubectl get httproute
 Output should be similar to
 ```code
 NAME        HOSTNAMES   AGE
-llm-route               4s
+llm-route               3s
 ```
 
 Get NGINX Gateway Fabric dataplane instance IP and HTTP port
@@ -203,19 +208,20 @@ Output should be similar to
 ```code
 HTTP/1.1 200 OK
 Server: nginx
-Date: Mon, 13 Apr 2026 13:15:36 GMT
+Date: Thu, 03 Sep 2026 07:27:15 GMT
 Content-Type: application/json
-Content-Length: 392
+Content-Length: 521
 Connection: keep-alive
-X-Inference-Pod: vllm-llama3-8b-instruct-5d4fd78fd5-8tfwh
+X-Inference-Pod: vllm-qwen3-32b-7955b44454-4hbrr
+X-Inference-Port: 8000
 
-{"id":"chatcmpl-6682e848-a556-4390-8f17-5765193d9bbf","created":1776086136,"model":"food-review-1","usage":{"prompt_tokens":10,"completion_tokens":3,"total_tokens":13},"object":"text_completion","do_remote_decode":false,"do_remote_prefill":false,"remote_block_ids":null,"remote_engine_id":"","remote_host":"","remote_port":0,"choices":[{"index":0,"finish_reason":"stop","text":"I am your "}]}
+{"id":"cmpl-bac9dfef-d7ca-54ef-bafb-cf3e05941206","created":1788420435,"model":"food-review-1","usage":{"prompt_tokens":10,"completion_tokens":50,"total_tokens":60},"object":"text_completion","kv_transfer_params":null,"choices":[{"index":0,"finish_reason":"stop","text":"The rest is silence. Today is a nice sunny day. The temperature here is twenty-five degrees centigrade. The temperature here is twenty-five degrees centigrade. The rest is silence. The temperature here is twenty-five degrees centigrade. To be or "}]}
 ```
 
 Delete the lab
 
 ```code
 kubectl delete -f .
-helm uninstall vllm-llama3-8b-instruct
-kubectl delete -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/raw/release-1.1/config/manifests/vllm/sim-deployment.yaml
+helm uninstall vllm-qwen3-32b
+kubectl delete -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api-inference-extension/refs/tags/v1.5.0/config/manifests/vllm/sim-deployment.yaml
 ```

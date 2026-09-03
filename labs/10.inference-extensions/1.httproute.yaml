@@ -11,7 +11,7 @@ spec:
   - backendRefs:
     - group: inference.networking.k8s.io
       kind: InferencePool
-      name: vllm-llama3-8b-instruct
+      name: vllm-qwen3-32b
     matches:
     - path:
         type: PathPrefix
