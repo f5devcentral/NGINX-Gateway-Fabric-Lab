@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: ReferenceGrant
+metadata:
+  name: allow-wafpolicy-refs
+  namespace: security
+spec:
+  from:
+  - group: gateway.nginx.org
+    kind: WAFPolicy
+    namespace: default
+  to:
+  - group: appprotect.f5.com
+    kind: APPolicy
+  - group: appprotect.f5.com
+    kind: APLogConf

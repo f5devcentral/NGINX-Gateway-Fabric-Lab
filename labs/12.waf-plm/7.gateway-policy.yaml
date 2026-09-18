@@ -1,0 +1,23 @@
+apiVersion: gateway.nginx.org/v1alpha1
+kind: WAFPolicy
+metadata:
+  name: gateway-base-protection
+spec:
+  type: PLM
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: gateway
+  policyRef:
+    apPolicyRef:
+      name: attack-signatures
+      namespace: security
+  securityLogs:
+  - destination:
+      type: syslog
+      syslog:
+        server: syslog-svc.default:514
+    logRef:
+      apLogConfRef:
+        name: log-illegal
+        namespace: security
