@@ -26,6 +26,9 @@ Prerequisites to use this repository are:
 1. [Deploy](/DEPLOYING.md) NGINX Gateway Fabric
 2. [Deploy](labs) use cases
 
+> [!NOTE]
+> Lab 12 (WAF with Policy Lifecycle Management) is self-contained and includes full instructions to deploy NGINX Gateway Fabric
+
 ## Removal
 
 Follow the instructions [here](/DEPLOYING.md#uninstalling) to uninstall NGINX Gateway Fabric

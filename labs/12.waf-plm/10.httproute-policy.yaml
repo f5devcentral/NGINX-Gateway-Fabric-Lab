@@ -1,0 +1,14 @@
+apiVersion: gateway.nginx.org/v1alpha1
+kind: WAFPolicy
+metadata:
+  name: customers-strict-protection
+spec:
+  type: PLM
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: customers
+  policyRef:
+    apPolicyRef:
+      name: dataguard-blocking
+      namespace: security

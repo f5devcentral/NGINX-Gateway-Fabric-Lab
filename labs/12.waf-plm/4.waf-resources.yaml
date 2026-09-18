@@ -1,0 +1,34 @@
+apiVersion: appprotect.f5.com/v1
+kind: APPolicy
+metadata:
+  name: attack-signatures
+  namespace: security
+spec:
+  policy:
+    name: attack-signatures-blocking
+    template:
+      name: POLICY_TEMPLATE_NGINX_BASE
+    applicationLanguage: utf-8
+    enforcementMode: blocking
+    signature-sets:
+    - name: All Signatures
+      block: true
+      alarm: true
+    cookies:
+    - name: "*"
+      attackSignaturesCheck: true
+      enforcementType: enforce
+      maskValueInLogs: false
+---
+apiVersion: appprotect.f5.com/v1
+kind: APLogConf
+metadata:
+  name: log-illegal
+  namespace: security
+spec:
+  filter:
+    request_type: illegal
+  content:
+    format: default
+    max_request_size: any
+    max_message_size: 15k

@@ -24,6 +24,7 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 8](8.auth-jwt) - JWT authentication
 - [Lab 9](9.rate-limit) - Rate limiting
 - [Lab 10](10.inference-extensions) - Gateway API Inference Extension
-- [Lab 11](11.waf) - F5 WAF for NGINX
+- [Lab 11](11.waf) - F5 WAF for NGINX using [bundle source](https://docs.nginx.com/nginx-gateway-fabric/waf-integration/get-started-http/)
+- [Lab 12](12.waf-plm) - F5 WAF for NGINX using [Policy Lifecycle Manager](https://docs.nginx.com/nginx-gateway-fabric/waf-integration/get-started-plm/)
 
 The official NGINX Gateway Fabric repository provides additional [examples](https://github.com/nginx/nginx-gateway-fabric/tree/main/examples)
