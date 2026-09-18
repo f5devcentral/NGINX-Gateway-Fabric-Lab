@@ -566,7 +566,7 @@ Both commands should print `ready`
 
 Because the `WAFPolicy` targets the `Gateway`, the `HTTPRoute` inherits WAF protection automatically
 
-WAF policy and log profile are enforced on NGINX Ingress Controller: both bundles are made available to NGINX Ingress Controller
+WAF policy and log profile are enforced on NGINX Gateway Fabric: both bundles are made available to the gateway
 ```bash
 NGF_POD=$(kubectl get pods \
   --selector app.kubernetes.io/instance=ngf \
@@ -581,7 +581,7 @@ Output should be similar to
 -rw-r--r-- 1 nginx nginx 2369813 Sep 18 14:22 security_attack-signatures.tgz
 ```
 
-Get NGINX Ingress Controller IP and port
+Get the Gateway IP and port
 
 ```bash
 export NGF_IP=`kubectl get pod -l app.kubernetes.io/instance=ngf -o json|jq '.items[0].status.hostIP' -r`
@@ -620,95 +620,6 @@ Pragma: no-cache
 Content-Length: 246
 
 <html><head><title>Request Rejected</title></head><body>The requested URL was rejected. Please consult with your administrator.<br><br>Your support ID is: 2579221527538077499<br><br><a href='javascript:history.back();'>[Go Back]</a></body></html>
-```
-
-Check WAF violation logs as received by the `syslog` pod
-```bash
-export SYSLOG_POD_NAME=`kubectl get pods -l app=syslog -o jsonpath='{.items[0].metadata.name}'`
-kubectl exec -it $SYSLOG_POD_NAME -- cat /var/log/messages
-```
-
-Unpublish the test application through the `Ingress` resource
-```bash
-kubectl delete -f 6.webapp-ingress.yaml
-```
-
-Publish the test application using the `VirtualServer` Custom Resource
-```bash
-kubectl apply -f 7.webapp-virtualserver.yaml
-```
-
-Check the `VirtualServer` object state
-```bash
-kubectl describe vs webapp
-```
-
-Output should be similar to
-```bash
-Name:         webapp
-Namespace:    default
-Labels:       <none>
-Annotations:  <none>
-API Version:  k8s.nginx.org/v1
-Kind:         VirtualServer
-Metadata:
-  Creation Timestamp:  2026-09-11T14:11:14Z
-  Generation:          1
-  Resource Version:    143667848
-  UID:                 efd71aec-6d78-4ffe-a1f9-223471cf7fb2
-Spec:
-  Host:  webapp.example.com
-  Policies:
-    Name:  waf-policy
-  Routes:
-    Action:
-      Pass:  webapp
-    Path:    /
-  Upstreams:
-    Name:     webapp
-    Port:     80
-    Service:  webapp-svc
-Status:
-  Message:  Configuration for default/webapp was added or updated 
-  Reason:   AddedOrUpdated
-  State:    Valid
-Events:
-  Type    Reason          Age   From                      Message
-  ----    ------          ----  ----                      -------
-  Normal  AddedOrUpdated  1s    nginx-ingress-controller  Configuration for default/webapp was added or updated
-```
-
-Test application access sending a legitimate request
-```bash
-curl --resolve webapp.example.com:$IC_HTTP_PORT:$IC_IP \
-  http://webapp.example.com:$IC_HTTP_PORT/test
-```
-
-Output should be similar to
-```bash
-Server address: 10.0.86.1:8080
-Server name: webapp-558ff5c8f6-z9khj
-Date: 11/Sep/2026:12:53:39 +0000
-URI: /test
-Request ID: cdaa7ba80b314000f0042b5d07eafda9
-```
-
-Test application access sending a malicious request
-```bash
-curl -i --resolve webapp.example.com:$IC_HTTP_PORT:$IC_IP \
-  "http://webapp.example.com:$IC_HTTP_PORT/test?q=<script>alert();</script>"
-```
-
-Output should be similar to
-```bash
-HTTP/1.1 200 OK
-Content-Type: text/html; charset=utf-8
-Connection: close
-Cache-Control: no-cache
-Pragma: no-cache
-Content-Length: 246
-
-<html><head><title>Request Rejected</title></head><body>The requested URL was rejected. Please consult with your administrator.<br><br>Your support ID is: 7559188820450840156<br><br><a href='javascript:history.back();'>[Go Back]</a></body></html>
 ```
 
 Check WAF violation logs as received by the `syslog` pod
