@@ -27,7 +27,7 @@ Prerequisites to use this repository are:
 2. [Deploy](labs) use cases
 
 > [!NOTE]
-> Lab 12 (WAF with Policy Lifecycle Management) is self-contained and includes full instructions to deploy NGINX Gateway Fabric
+> [Lab 12](labs/12.waf-plm/) (WAF with Policy Lifecycle Management) is self-contained and includes full instructions to deploy NGINX Gateway Fabric
 
 ## Removal
 

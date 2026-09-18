@@ -782,4 +782,5 @@ helm uninstall cert-manager -n cert-manager
 kubectl delete ns cert-manager
 
 kubectl delete -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.7.2" | kubectl delete -f -
 ```
