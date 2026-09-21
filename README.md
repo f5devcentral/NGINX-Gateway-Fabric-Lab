@@ -19,7 +19,7 @@ Prerequisites to use this repository are:
 * [jq](https://github.com/jqlang/jq) 
 * [grpcurl](https://github.com/fullstorydev/grpcurl)
 * Python 3.14 or later
-* An F5 BIG-IP system (only for [Lab 13](labs/13.ingresslink/))
+* An F5 BIG-IP system (only for [Lab 13](labs/13.gatewaylink/))
 * Valid NGINX Plus license. You can request a trial license [here](https://www.f5.com/trials/nginx-one)
   * Three files are needed (sample names here are from a trial license): `nginx-one-eval.crt` `nginx-one-eval.key` and `nginx-one-eval.jwt`
 
@@ -29,7 +29,7 @@ Prerequisites to use this repository are:
 2. [Deploy](labs) use cases
 
 > [!NOTE]
-> [Lab 12](labs/12.waf-plm/) (WAF with Policy Lifecycle Management) and [Lab 13](labs/13.ingresslink/) (F5 BIG-IP external load balancer integration) are self-contained and include full instructions to deploy NGINX Gateway Fabric
+> [Lab 12](labs/12.waf-plm/) (WAF with Policy Lifecycle Management) and [Lab 13](labs/13.gatewaylink/) (F5 BIG-IP external load balancer integration) are self-contained and include full instructions to deploy NGINX Gateway Fabric
 
 ## Removal
 

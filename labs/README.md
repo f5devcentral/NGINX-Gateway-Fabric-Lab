@@ -26,6 +26,6 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 10](10.inference-extensions) - Gateway API Inference Extension
 - [Lab 11](11.waf) - F5 WAF for NGINX using [bundle source](https://docs.nginx.com/nginx-gateway-fabric/waf-integration/get-started-http/)
 - [Lab 12](12.waf-plm) - F5 WAF for NGINX using [Policy Lifecycle Manager](https://docs.nginx.com/nginx-gateway-fabric/waf-integration/get-started-plm/)
-- [Lab 13](13.ingresslink) - Integration with F5 BIG-IP as an external load balancer
+- [Lab 13](13.gatewaylink) - Integration with F5 BIG-IP as an external load balancer
 
 The official NGINX Gateway Fabric repository provides additional [examples](https://github.com/nginx/nginx-gateway-fabric/tree/main/examples)
