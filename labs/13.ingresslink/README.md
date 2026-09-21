@@ -38,12 +38,12 @@ export BIGIP_PASSWORD="myPassword"
 export IPAM_ADDRESS_RANGE="192.168.2.180-192.168.2.185"
 ```
 
-# Install AS3 on BIG-IP
+## Install AS3 on BIG-IP
 
 F5 Container Ingress Services configures BIG-IP by posting AS3 declarations, so AS3 must be installed before anything else
 Follow Downloading and installing the BIG-IP AS3 package in the [F5 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/installation.html), then return here
 
-# Create BIG-IP partition
+## Create BIG-IP partition
 
 Create the `k8s` user partition F5 Container Ingress Services owns on the F5 BIG-IP system
 ```bash
@@ -60,7 +60,7 @@ Output should be similar to
 }
 ```
 
-# Create Proxy protocol iRule
+## Create Proxy protocol iRule
 
 Create the F5 BIG-IP iRule that takes care of adding the PROXY protocol header. This carries the original client address, so NGINX can report it instead of the BIG-IP self-IP address
 ```bash
@@ -80,7 +80,7 @@ Output should be similar to
 }
 ```
 
-# Deploy F5 IPAM Controller
+## Deploy F5 IPAM Controller
 
 Deploy the `ipams.fic.f5.com` custom resource
 ```bash
@@ -138,7 +138,7 @@ I0907 12:31:33.463961       1 shared_informer.go:247] Caches are synced for F5 I
 2026/09/07 12:31:33 [DEBUG] Starting Custom Resource Worker
 ```
 
-# Deploy F5 BIG-IP Container Ingress Services
+## Deploy F5 BIG-IP Container Ingress Services
 
 Apply F5 BIG-IP Container Ingress Services custom resources
 ```bash
@@ -203,7 +203,7 @@ When the pod starts it authenticates against the F5 BIG-IP system: a successful 
 2026/09/21 09:56:39 [DEBUG] [2026-09-21 09:56:39,494 urllib3.connectionpool DEBUG] https://bigip1.nginx.lab:443 "POST /mgmt/shared/authn/login HTTP/1.1" 200 723
 ```
 
-# Deploy NGINX Gateway Fabric
+## Deploy NGINX Gateway Fabric
 
 Create NGINX Gateway Fabric namespace
 
@@ -273,7 +273,7 @@ Output should be similar to
 {"level":"info","ts":"2026-09-21T10:00:34Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":33}
 ```
 
-# Deploy the gateway
+## Deploy the gateway
 
 Create the `NginxProxy` object that configures the Gateway that references it with the settings BIG-IP depends on:
 
@@ -395,7 +395,7 @@ Status:
 Events:       <none>
 ```
 
-# Deploy the test application
+## Deploy the test application
 
 Apply the application manifest
 ```bash
@@ -430,7 +430,7 @@ NAME     HOSTNAMES              AGE
 coffee   ["cafe.example.com"]   18s
 ```
 
-# Create the external load balancer
+## Create the external load balancer
 
 Create an `ExternalLoadBalancer` resource
 The `.spec.gatewayLink.ipamLabel` field tells the F5 IPAM Controller which address range to allocate from. The value must match a pool name in the `args.ip_range` map used when installing the F5 IPAM Controller
@@ -491,13 +491,13 @@ NAME            IPAMVSADDRESS   AGE
 gateway-nginx   192.168.2.180   54s
 ```
 
-# F5 BIG-IP configuration check
+## F5 BIG-IP configuration check
 
 The F5 BIG-IP system should show the LTM Virtual Server correctly configured in the `k8s` user partition
 
 ![BIG-IP](/labs/13.ingresslink/bigip.png)
 
-# Application access test
+## Application access test
 
 Retrieve the F5 BIG-IP LTM Virtual Server IP address
 ```bash
@@ -509,7 +509,7 @@ Send a test request to the F5 BIG-IP LTM Virtual Server
 curl --resolve cafe.example.com:80:$VS_ADDRESS http://cafe.example.com/coffee
 ```
 
-# Remove setup
+## Remove setup
 
 ```bash
 kubectl delete -f 5.externalLB.yaml
