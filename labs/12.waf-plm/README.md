@@ -350,7 +350,7 @@ Output should be similar to
 
 Apply the application manifest
 ```bash
-kubectl apply -f 7.webapp.yaml
+kubectl apply -f 2.webapp.yaml
 ```
 
 Check that the application pod is `Running`
