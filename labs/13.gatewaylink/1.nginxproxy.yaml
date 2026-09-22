@@ -12,6 +12,7 @@ spec:
     service:
       type: NodePort
       externalTrafficPolicy: Cluster
+      #externalTrafficPolicy: Local
     deployment:
       container:
         readinessProbe:
