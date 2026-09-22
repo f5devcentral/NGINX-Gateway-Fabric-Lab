@@ -526,5 +526,5 @@ kubectl delete ns nginx-gateway
 helm uninstall f5-cis -n kube-system
 kubectl delete -f https://raw.githubusercontent.com/F5Networks/k8s-bigip-ctlr/v2.20.4/docs/config_examples/customResourceDefinitions/customresourcedefinitions.yml
 helm uninstall f5-ipam-controller -n kube-system
-kubectl apply -f 0.cis.yaml
+kubectl delete -f 0.cis.yaml
 ```
