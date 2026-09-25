@@ -509,7 +509,7 @@ Send a test request to the F5 BIG-IP LTM Virtual Server
 curl --resolve cafe.example.com:80:$VS_ADDRESS http://cafe.example.com/coffee
 ```
 
-## Remove setup
+## Delete the lab
 
 ```bash
 kubectl delete -f 5.externalLB.yaml

@@ -29,7 +29,11 @@ Prerequisites to use this repository are:
 2. [Deploy](labs) use cases
 
 > [!NOTE]
-> [Lab 12](labs/12.waf-plm/) (WAF with Policy Lifecycle Management) and [Lab 13](labs/13.gatewaylink/) (F5 BIG-IP external load balancer integration) are self-contained and include full instructions to deploy NGINX Gateway Fabric
+> [Lab 12](labs/12.waf-plm/) - F5 WAF for NGINX using Policy Lifecycle Manager
+> [Lab 13](labs/13.gatewaylink/) - Integration with F5 BIG-IP as external load balancer integration)
+> [Lab 13](labs/14.externaldns/) - Integration with ExternalDNS
+> 
+> are self-contained and include full instructions to deploy NGINX Gateway Fabric
 
 ## Removal
 

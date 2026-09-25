@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: powerdns
+spec:
+  clusterIP: None
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: powerdns
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          imagePullPolicy: IfNotPresent
+
+          env:
+            - name: POSTGRES_DB
+              value: powerdns
+            - name: POSTGRES_USER
+              value: powerdns
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-postgres
+                  key: POSTGRES_PASSWORD
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - powerdns
+                - -d
+                - powerdns
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+
+            # PostgreSQL executes this file automatically on first initialization.
+            - name: powerdns-schema
+              mountPath: /docker-entrypoint-initdb.d/01-powerdns-schema.sql
+              subPath: schema.pgsql.sql
+              readOnly: true
+
+      volumes:
+        - name: powerdns-schema
+          configMap:
+            name: powerdns-pgsql-schema
+
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: powerdns
+  namespace: powerdns
+spec:
+  serviceName: powerdns
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerdns
+  template:
+    metadata:
+      labels:
+        app: powerdns
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:16
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: powerdns-postgres
+                  key: POSTGRES_PASSWORD
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              until pg_isready \
+                -h postgres.powerdns.svc.cluster.local \
+                -p 5432 \
+                -U powerdns \
+                -d powerdns; do
+                echo "Waiting for PostgreSQL..."
+                sleep 3
+              done
+
+      containers:
+        - name: powerdns
+          image: powerdns/pdns-auth-51:latest
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - NET_BIND_SERVICE
+
+          ports:
+            - name: dns-udp
+              containerPort: 10053
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 10053
+              protocol: TCP
+            - name: api
+              containerPort: 8081
+              protocol: TCP
+
+          readinessProbe:
+            tcpSocket:
+              port: api
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            tcpSocket:
+              port: api
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+          volumeMounts:
+            - name: powerdns-config
+              mountPath: /etc/powerdns/pdns.conf
+              subPath: pdns.conf
+              readOnly: true
+
+      volumes:
+        - name: powerdns-config
+          secret:
+            secretName: powerdns-config
+---
+# Public DNS Service.
+# Exposes both UDP/53 and TCP/53.
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns-dns
+  namespace: powerdns
+spec:
+  type: NodePort
+  selector:
+    app: powerdns
+  ports:
+    - name: dns-udp
+      port: 10053
+      protocol: UDP
+    - name: dns-tcp
+      port: 10053
+      protocol: TCP
+---
+# Internal API Service for ExternalDNS.
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns-api
+  namespace: powerdns
+spec:
+  type: ClusterIP
+  selector:
+    app: powerdns
+  ports:
+    - name: api
+      port: 8081
+      protocol: TCP

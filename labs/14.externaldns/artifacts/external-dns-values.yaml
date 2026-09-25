@@ -1,0 +1,50 @@
+provider:
+  name: pdns
+
+sources:
+  # For LoadBalancer services
+  #- service
+  # For Kubernetes Ingress
+  #- ingress
+  # For Kubernetes Gateway API HTTPRoute
+  - gateway-httproute
+
+domainFilters:
+  - example.com
+
+# DNS records deletion disabled using upsert-only
+#policy: upsert-only
+# Full DNS records management, including deletion
+policy: sync
+
+registry: txt
+txtOwnerId: my-cluster
+
+interval: 15s
+logLevel: info
+
+extraArgs:
+  # For an HTTP PowerDNS API
+  pdns-server: "http://powerdns-api.powerdns.svc.cluster.local:8081"
+
+  # For an HTTPS PowerDNS API with a trusted certificate
+  #pdns-server: "https://powerdns-api.powerdns.svc.cluster.local:8081"
+
+  # For a self-signed certificate
+  #pdns-server: "https://powerdns-api.powerdns.svc.cluster.local:8081"
+  #pdns-skip-tls-verify: "true"
+
+  pdns-server-id: "localhost"
+
+env:
+  - name: EXTERNAL_DNS_PDNS_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: powerdns-api
+        key: api-key
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
