@@ -391,7 +391,7 @@ example.com.            3600    IN      SOA     a.misconfigured.dns.server.inval
 
 The zone `SOA` record is correctly resolved
 
-## ExternalDNS deployment
+## Deploy ExternalDNS
 
 Create the Kubernetes namespace and API-key Secret to access PowerDNS API
 ```bash
