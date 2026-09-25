@@ -7,6 +7,7 @@ The NGINX Gateway Fabric is deployed directly in this lab
 `cd` into the lab directory
 ```bash
 cd ~/NGINX-Gateway-Fabric-Lab/labs/14.externaldns
+```
 
 ## Deploy MetalLB
 
