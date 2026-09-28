@@ -37,7 +37,7 @@ kubectl get configmap kube-proxy -n kube-system -o yaml | \
 Add the helm chart
 ```bash
 helm repo add metallb https://metallb.github.io/metallb
-helm install metallb metallb/metallb
+helm repo update
 ```
 
 Deploy MetalLB
@@ -61,6 +61,14 @@ metallb-frr-k8s-vvnzk                           5/5     Running   0          5m1
 metallb-speaker-4nksb                           1/1     Running   0          5m15s
 metallb-speaker-fkfvs                           1/1     Running   0          43s
 metallb-speaker-k8xt8                           1/1     Running   0          5m15s
+```
+
+Customize the `spec.addresses` section in `0.ipaddresspool.yaml` with one or more unused IP addresses from the same network as your Kubernetes cluster nodes.
+These addresses will be used by MetalLB and must be reachable during the lab.
+
+To list the node IP addresses, run
+```bash
+kubectl get nodes -o jsonpath='{range .items[*].status.addresses[0]}{.address}{"\n"}{end}'
 ```
 
 Create the IP Address pool MetalLB manages
@@ -105,16 +113,13 @@ kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/infe
 Install NGINX Gateway Fabric through its Helm chart
 ```bash
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
-  --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus-f5waf \
+  --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
   --set nginx.image.tag=2.7.2 \
   --set nginx.plus=true \
-  --set nginx.config.waf.enable=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.usage.secretName=nplus-license \
   --set nginx.service.type=LoadBalancer \
-  --set nginxGateway.snippets.enable=true \
-  --set nginxGateway.gwAPIInferenceExtension.enable=true \
   -n nginx-gateway
 ```
 
@@ -152,12 +157,6 @@ local-path-provisioner-79b7b99b5d-w69vk   1/1     Running   0          24s
 Set the `storageclass` as default
 ```bash
 kubectl patch storageclass local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-```
-
-Output should be similar to
-```bash
-NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  17m
 ```
 
 Check the storage class
@@ -473,9 +472,9 @@ kubectl get pods
 
 The Gateway pod should be in rhe `Running` status
 ```bash
-NAME                             READY   STATUS    RESTARTS   AGE
-echo-6697d99c4d-xrnh4            1/1     Running   0          2m27s
-gateway-nginx-6c67bcd864-7tmvz   4/4     Running   0          30s
+NAME                            READY   STATUS    RESTARTS   AGE
+echo-6697d99c4d-g2jh9           1/1     Running   0          33s
+gateway-nginx-7c4b9c79c-65hln   1/1     Running   0          28s
 ```
 
 Check the service status: the `LoadBalancer` service has allocated an external-facing IP address for the Gateway
@@ -568,7 +567,7 @@ Remove the `HTTPRoute`
 kubectl delete -f 4.httproute.yaml
 ```
 
-Within 15 seconds (as specified in the [external DNS values file](artifacts/external-dns-values.yaml) as `interval: 15s` the DNS record is deleted from PowerDNS by external-dns
+Within 15 seconds (as specified in the [external DNS values file](artifacts/external-dns-values.yaml) as `interval: 15s`) the DNS record is deleted from PowerDNS by external-dns
 ```bash
 kubectl logs $EDNS_POD_NAME -n external-dns
 ```
