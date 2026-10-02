@@ -23,6 +23,38 @@ The NGINX Gateway Fabric is deployed directly in this lab
 cd ~/NGINX-Gateway-Fabric-Lab/labs/13.ingresslink
 ```
 
+## Deploy the test storage provider
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+```
+
+```bash
+kubectl get pods -n local-path-storage
+```
+
+Output should be similar to
+```bash
+NAME                                      READY   STATUS    RESTARTS   AGE
+local-path-provisioner-79b7b99b5d-w69vk   1/1     Running   0          24s
+```
+
+Set the `storageclass` as default
+```bash
+kubectl patch storageclass local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
+Check the storage class
+```bash
+kubectl get storageclass
+```
+
+Output should be similar to
+```bash
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  17m
+```
+
 ## Set BIG-IP configuration variables
 
 ```bash
@@ -104,7 +136,7 @@ helm install f5-ipam-controller f5-ipam-stable/f5-ipam-controller \
   --set args.log_level=DEBUG \
   --set pvc.create=true \
   --set pvc.storage=100Mi \
-  --set pvc.storageClassName=nfs-client \
+  --set pvc.storageClassName=local-path \
   --set-string 'args.ip_range=\{"production":"'"$IPAM_ADDRESS_RANGE"'"\}' \
   --wait
 ```
@@ -495,7 +527,7 @@ gateway-nginx   192.168.2.180   54s
 
 The F5 BIG-IP system should show the LTM Virtual Server correctly configured in the `k8s` user partition
 
-![BIG-IP](/labs/13.ingresslink/bigip.png)
+![BIG-IP](https://raw.githubusercontent.com/f5devcentral/NGINX-Gateway-Fabric-Lab/refs/heads/main/labs/13.gatewaylink/bigip.png)
 
 ## Application access test
 
@@ -527,4 +559,6 @@ helm uninstall f5-cis -n kube-system
 kubectl delete -f https://raw.githubusercontent.com/F5Networks/k8s-bigip-ctlr/v2.20.4/docs/config_examples/customResourceDefinitions/customresourcedefinitions.yml
 helm uninstall f5-ipam-controller -n kube-system
 kubectl delete -f 0.cis.yaml
+
+kubectl delete -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 ```
