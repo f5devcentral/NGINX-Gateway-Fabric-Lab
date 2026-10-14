@@ -44,7 +44,7 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 ## Deploy Gateway API CRDs
 
 ```bash
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.7.2" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl apply -f -
 ```
 
 ## Deploy cert-manager 
@@ -299,7 +299,7 @@ Install NGINX Gateway Fabric through its Helm chart (set `nginx.image.tag` to th
 ```bash
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus-f5waf \
-  --set nginx.image.tag=2.7.2 \
+  --set nginx.image.tag=2.8.0 \
   --set nginx.plus=true \
   --set nginx.config.waf.enable=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
@@ -335,15 +335,13 @@ kubectl logs -l app.kubernetes.io/instance=ngf -n nginx-gateway -c nginx-gateway
 
 Output should be similar to
 ```bash
-{"level":"info","ts":"2026-09-18T10:01:13Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.7.2","commit":"580542620c2290118ba6dba5af7a612e6feaafbc","date":"2026-09-16T16:31:52Z","dirty":"true"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","msg":"Starting manager"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
-{"level":"info","ts":"2026-09-18T10:01:13Z","msg":"Attempting to acquire leader lease...","lock":"nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","msg":"Successfully acquired lease","lock":"nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","logger":"telemetryJob","msg":"Starting cronjob"}
-{"level":"info","ts":"2026-09-18T10:01:13Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":23}
+{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.8.0","commit":"5c7023bc37381df47dff87ef94fe65f31b0168b4","date":"2026-10-13T17:44:28Z","dirty":"false"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"Starting manager"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
+{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"agentGRPCServer","msg":"Starting GRPC Server"}
+{"level":"info","ts":"2026-10-14T12:22:35Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane","batchID":2}
 ```
 
 ## Deploy the test application
@@ -693,5 +691,5 @@ helm uninstall cert-manager -n cert-manager
 kubectl delete ns cert-manager
 
 kubectl delete -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.7.2" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl delete -f -
 ```

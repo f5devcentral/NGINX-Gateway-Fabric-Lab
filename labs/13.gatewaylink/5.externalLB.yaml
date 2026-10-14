@@ -12,3 +12,7 @@ spec:
     partition: k8s
     iRules:
       - /Common/Proxy_Protocol_iRule
+    tls:
+      reference: bigip
+      clientSSLs:
+        - /Common/clientssl
