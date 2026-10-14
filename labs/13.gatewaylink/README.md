@@ -11,7 +11,7 @@ and an iRule preserves the original client address by forwarding it to NGINX usi
 Prerequisites:
 
 * A Kubernetes cluster
-* An F5 BIG-IP system running version 17.1.0.3 or later, and an account on it with administrator privileges
+* An F5 BIG-IP system running version 17.1.0.3 or later, and the `admin` account on it
 * Network access from the cluster to the BIG-IP system, and from BIG-IP to the cluster node addresses
 * Python 3.14 or later
 
@@ -61,12 +61,35 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 export BIGIP_ADDRESS="<BIGIP_MGMT_ADDRESS:443>"
 export BIGIP_USERNAME="admin"
 export BIGIP_PASSWORD="<BIGIP_ADMIN_PASSWORD>"
-export IPAM_ADDRESS_RANGE="<BIGIP_LTM_VS_ADDRESS RANGE>"
+```
 
+For example
+```bash
 # Example
 export BIGIP_ADDRESS="bigip1.nginx.lab:443"
 export BIGIP_USERNAME="admin"
 export BIGIP_PASSWORD="myPassword"
+```
+
+Get the BIG-IP `self ip` address and subnet
+```bash
+curl -sku "$BIGIP_USERNAME:$BIGIP_PASSWORD" "https://$BIGIP_ADDRESS/mgmt/tm/net/self" \
+  | python3 -c 'import sys,json;[print(x["name"],x["address"]) for x in json.load(sys.stdin)["items"]]'
+```
+
+The output reports each self-IP with its prefix length
+```bash
+selfip_traffic 192.168.2.69/24
+```
+
+A self-IP of `192.168.2.69/24` means the allocated address must fall within `192.168.2.1` to `192.168.2.254`. Set `IPAM_ADDRESS_RANGE` to a free range inside that subnet
+```bash
+export IPAM_ADDRESS_RANGE="<BIGIP_LTM_VS_ADDRESS RANGE>"
+```
+
+For example
+```bash
+# Example
 export IPAM_ADDRESS_RANGE="192.168.2.180-192.168.2.185"
 ```
 
@@ -117,9 +140,6 @@ Output should be similar to
 Deploy the `ipams.fic.f5.com` custom resource
 ```bash
 kubectl apply -f 0.cis.yaml
-
-curl -sku "$BIGIP_USERNAME:$BIGIP_PASSWORD" "https://$BIGIP_ADDRESS/mgmt/tm/net/self" \
-  | python3 -c 'import sys,json;[print(x["name"],x["address"]) for x in json.load(sys.stdin)["items"]]'
 ```
 
 Deploy the F5 IPAM Controller using the Helm chart
@@ -184,12 +204,12 @@ kubectl get crd | grep cis.f5.com
 
 Output should be similar to
 ```bash
-externaldnses.cis.f5.com                              2026-09-07T13:16:09Z
-ingresslinks.cis.f5.com                               2026-09-07T13:16:09Z
-policies.cis.f5.com                                   2026-09-07T13:16:09Z
-tlsprofiles.cis.f5.com                                2026-09-07T13:16:09Z
-transportservers.cis.f5.com                           2026-09-07T13:16:09Z
-virtualservers.cis.f5.com                             2026-09-07T13:16:09Z
+externaldnses.cis.f5.com                               Namespaced   v1(storage)         2026-10-14T11:56:29Z
+ingresslinks.cis.f5.com                                Namespaced   v1(storage)         2026-10-14T11:56:29Z
+policies.cis.f5.com                                    Namespaced   v1(storage)         2026-10-14T11:56:29Z
+tlsprofiles.cis.f5.com                                 Namespaced   v1(storage)         2026-10-14T11:56:29Z
+transportservers.cis.f5.com                            Namespaced   v1(storage)         2026-10-14T11:56:29Z
+virtualservers.cis.f5.com                              Namespaced   v1(storage)         2026-10-14T11:56:29Z
 ```
 
 Deploy F5 BIG-IP Container Ingress Services using the Helm chart
@@ -256,15 +276,15 @@ kubectl create secret generic nplus-license --from-file license.jwt=<nginx-one-e
 Apply NGINX Gateway Fabric custom resources
 
 ```bash
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.7.2" | kubectl apply -f -
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.7.2" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.8.0" | kubectl apply -f -
 ```
 
 Install NGINX Gateway Fabric through its Helm chart
 ```bash
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
-  --set nginx.image.tag=2.7.2 \
+  --set nginx.image.tag=2.8.0 \
   --set nginx.plus=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
@@ -296,13 +316,13 @@ kubectl logs -l app.kubernetes.io/instance=ngf -n nginx-gateway -c nginx-gateway
 
 Output should be similar to
 ```bash
-{"level":"info","ts":"2026-09-21T10:00:33Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.7.2","commit":"580542620c2290118ba6dba5af7a612e6feaafbc","date":"2026-09-16T16:31:52Z","dirty":"true"}
-{"level":"info","ts":"2026-09-21T10:00:33Z","msg":"Starting manager"}
-{"level":"info","ts":"2026-09-21T10:00:33Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
-{"level":"info","ts":"2026-09-21T10:00:33Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
-{"level":"info","ts":"2026-09-21T10:00:33Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
-{"level":"info","ts":"2026-09-21T10:00:33Z","msg":"Attempting to acquire leader lease...","lock":"nginx-gateway/ngf-nginx-gateway-fabric-leader-election"}
-{"level":"info","ts":"2026-09-21T10:00:34Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane.","batchID":33}
+{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.8.0","commit":"5c7023bc37381df47dff87ef94fe65f31b0168b4","date":"2026-10-13T17:44:28Z","dirty":"false"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"Starting manager"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
+{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
+{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"agentGRPCServer","msg":"Starting GRPC Server"}
+{"level":"info","ts":"2026-10-14T12:22:35Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane","batchID":2}
 ```
 
 ## Deploy the gateway
@@ -551,8 +571,8 @@ kubectl delete -f 2.gateway.yaml
 kubectl delete -f 1.nginxproxy.yaml
 
 helm uninstall ngf -n nginx-gateway
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.7.2" | kubectl delete -f -
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.7.2" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.8.0" | kubectl delete -f -
 kubectl delete ns nginx-gateway
 
 helm uninstall f5-cis -n kube-system
