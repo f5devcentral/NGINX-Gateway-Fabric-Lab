@@ -20,7 +20,7 @@ The NGINX Gateway Fabric is deployed directly in this lab
 
 `cd` into the lab directory
 ```bash
-cd ~/NGINX-Gateway-Fabric-Lab/labs/13.ingresslink
+cd ~/NGINX-Gateway-Fabric-Lab/labs/13.gatewaylink
 ```
 
 ## Deploy the test storage provider
