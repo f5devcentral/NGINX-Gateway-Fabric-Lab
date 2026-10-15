@@ -173,7 +173,7 @@ f5-ipam-controller-5f6b96644d-mzkg7        1/1     Running   0              12d
 
 Check the F5 IPAM Controller logs
 ```bash
-kubectl logs -l app=f5-ipam-controller -n kube-system -f
+kubectl logs -l app=f5-ipam-controller -n kube-system
 ```
 
 Output should be similar to
