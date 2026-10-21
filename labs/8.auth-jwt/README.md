@@ -2,6 +2,12 @@
 
 This use case shows how to enforce JWT authentication
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](08-auth-jwt.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/8.auth-jwt

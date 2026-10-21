@@ -2,6 +2,12 @@
 
 This use case shows how to optimize traffic routing to self-hosting Generative AI Models on Kubernetes
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](10-inference-extensions.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/10.inference-extensions

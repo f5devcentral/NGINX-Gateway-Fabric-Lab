@@ -2,6 +2,12 @@
 
 This use case shows how to publish a sample PHP application using the FastCGI interface through SnippetsFilter
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](07-fastcgi.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/7.fastcgi

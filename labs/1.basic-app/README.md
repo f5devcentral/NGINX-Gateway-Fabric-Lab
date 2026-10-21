@@ -2,6 +2,12 @@
 
 This use case shows how to publish two sample applications using URI-based routing
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](01-basic-app.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/1.basic-app

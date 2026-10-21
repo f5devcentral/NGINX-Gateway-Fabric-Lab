@@ -2,6 +2,12 @@
 
 This use case shows how to manage gRPC traffic through NGINX Gateway Fabric
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](06-grpc.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/6.grpc
