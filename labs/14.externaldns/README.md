@@ -4,6 +4,12 @@ This lab demonstrates how to integrate NGINX Gateway Fabric with [ExternalDNS](h
 
 The NGINX Gateway Fabric is deployed directly in this lab
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](14-externaldns.svg)
+
 `cd` into the lab directory
 ```bash
 cd ~/NGINX-Gateway-Fabric-Lab/labs/14.externaldns

@@ -2,6 +2,12 @@
 
 This use case shows how to split traffic between two versions of the same application
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](05-traffic-splitting.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/5.traffic-splitting

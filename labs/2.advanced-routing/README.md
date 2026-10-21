@@ -2,6 +2,12 @@
 
 This use case shows how to publish two sample applications using HTTP matching conditions routing
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](02-advanced-routing.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/2.advanced-routing

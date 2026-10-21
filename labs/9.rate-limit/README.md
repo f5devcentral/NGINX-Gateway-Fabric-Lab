@@ -2,6 +2,12 @@
 
 This use case shows how to set rate limits for HTTP and gRPC routes
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](09-rate-limit.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/9.rate-limit

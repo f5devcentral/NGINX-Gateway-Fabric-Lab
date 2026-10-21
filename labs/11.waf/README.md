@@ -2,6 +2,12 @@
 
 This use case shows how to use F5 WAF for NGINX to protect applications published through NGINX Gateway Fabric
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](11-waf.svg)
+
 `cd` into the lab directory
 ```bash
 cd ~/NGINX-Gateway-Fabric-Lab/labs/11.waf

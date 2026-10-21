@@ -18,6 +18,12 @@ Prerequisites:
 
 The NGINX Gateway Fabric is deployed directly in this lab
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](13-gatewaylink.svg)
+
 `cd` into the lab directory
 ```bash
 cd ~/NGINX-Gateway-Fabric-Lab/labs/13.gatewaylink

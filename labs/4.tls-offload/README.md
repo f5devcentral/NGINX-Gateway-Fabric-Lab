@@ -2,6 +2,12 @@
 
 This use case shows how to apply TLS offload and HTTP-to-HTTPS redirection
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](04-tls-offload.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/4.tls-offload

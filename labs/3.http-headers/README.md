@@ -2,6 +2,12 @@
 
 This use case shows how to modify HTTP headers
 
+## Architecture and Traffic Flow
+
+The following diagram illustrates the architecture and traffic flow for this lab:
+
+![Traffic Flow](03-http-headers.svg)
+
 `cd` into the lab directory
 ```code
 cd ~/NGINX-Gateway-Fabric-Lab/labs/3.http-headers
