@@ -19,11 +19,14 @@ cd ~/NGINX-Gateway-Fabric-Lab/labs/14.externaldns
 
 > [!NOTE]
 > MetalLB must be deployed only if the Kubernetes cluster has no `LoadBalancer` service type implementation
+> Note that when running the lab on a public cloud provider-hosted Kubernetes cluster, MetalLB is not necessary
 
-NGINX Gateway Fabric will be deployed in `LoadBalancer` mode and MetalLB is necessary to provide the service
-MetalLB documentation is available [here](https://metallb.universe.tf/installation/)
+NGINX Gateway Fabric will be deployed in `LoadBalancer` mode and MetalLB is necessary to provide the service.
 
-If you’re using kube-proxy in IPVS mode, since Kubernetes v1.14.2 you have to enable strict ARP mode
+MetalLB documentation is available [here](https://metallb.universe.tf/installation/).
+
+If you’re using kube-proxy in IPVS mode, since Kubernetes v1.14.2 you have to enable strict ARP mode.
+
 Note, you don’t need this if you’re using kube-router as service-proxy because it is enabling strict ARP by default
 
 Verify the changes that would be made
@@ -634,4 +637,5 @@ kubectl delete ns powerdns
 kubectl delete -f https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/v2.8.0/deploy/crds.yaml
 kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl delete -f -
 kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.8.0" | kubectl delete -f -
+kubectl delete -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 ```
