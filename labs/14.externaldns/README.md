@@ -19,6 +19,7 @@ cd ~/NGINX-Gateway-Fabric-Lab/labs/14.externaldns
 
 > [!NOTE]
 > MetalLB must be deployed only if the Kubernetes cluster has no `LoadBalancer` service type implementation
+> 
 > Note that when running the lab on a public cloud provider-hosted Kubernetes cluster, MetalLB is not necessary
 
 NGINX Gateway Fabric will be deployed in `LoadBalancer` mode and MetalLB is necessary to provide the service.
