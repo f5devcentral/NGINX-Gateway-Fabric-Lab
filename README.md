@@ -25,17 +25,13 @@ Prerequisites to use this repository are:
 
 ## Deployment
 
-1. [Deploy](/DEPLOYING.md) NGINX Gateway Fabric
-2. [Deploy](labs) use cases
+| Deployment | Lab 1 | Lab 2 | Lab 3 | Lab 4 | Lab 5 | Lab 6 | Lab 7 | Lab 8 | Lab 9 | Lab 10 | Lab 11 | Lab 12 | Lab 13 | Lab 14 |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| [Deploy](/DEPLOYING.md) NGINX Gateway Fabric and F5 WAF for NGINX | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| [Deploy](/labs) use case directly | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
 
 > [!NOTE]
-> [Lab 12](labs/12.waf-plm/) - F5 WAF for NGINX using Policy Lifecycle Manager
-> 
-> [Lab 13](labs/13.gatewaylink/) - Integration with F5 BIG-IP as external load balancer
-> 
-> [Lab 14](labs/14.externaldns/) - Integration with ExternalDNS
-> 
-> are self-contained and include full instructions to deploy NGINX Gateway Fabric
+> Labs 1–11 use the shared [DEPLOYING.md](/DEPLOYING.md) setup, whereas Labs 12 (waf-plm), 13 (gatewaylink), and 14 (externaldns) are self-contained and deploy NGINX Gateway Fabric directly within each lab.
 
 ## Removal
 
