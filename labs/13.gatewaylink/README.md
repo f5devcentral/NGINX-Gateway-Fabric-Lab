@@ -282,15 +282,16 @@ kubectl create secret generic nplus-license --from-file license.jwt=<nginx-one-e
 Apply NGINX Gateway Fabric custom resources
 
 ```bash
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl apply -f -
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.8.0" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.9.0" | kubectl apply -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.9.0" | kubectl apply -f -
 ```
 
 Install NGINX Gateway Fabric through its Helm chart
 ```bash
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
+  --version 2.9.0
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus \
-  --set nginx.image.tag=2.8.0 \
+  --set nginx.image.tag=2.9.0 \
   --set nginx.plus=true \
   --set serviceAccount.imagePullSecret=nginx-plus-registry-secret \
   --set nginx.imagePullSecret=nginx-plus-registry-secret \
@@ -322,13 +323,14 @@ kubectl logs -l app.kubernetes.io/instance=ngf -n nginx-gateway -c nginx-gateway
 
 Output should be similar to
 ```bash
-{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.8.0","commit":"5c7023bc37381df47dff87ef94fe65f31b0168b4","date":"2026-10-13T17:44:28Z","dirty":"false"}
-{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"Starting manager"}
-{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
-{"level":"info","ts":"2026-10-14T12:22:34Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
-{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
-{"level":"info","ts":"2026-10-14T12:22:34Z","logger":"agentGRPCServer","msg":"Starting GRPC Server"}
-{"level":"info","ts":"2026-10-14T12:22:35Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane","batchID":2}
+{"level":"info","ts":"2026-11-19T09:15:51Z","msg":"Starting the NGINX Gateway Fabric control plane","version":"2.9.0","commit":"63846d07b738dd024bc9b6c39aceaf730775a879","date":"2026-11-16T19:48:35Z","dirty":"false"}
+{"level":"info","ts":"2026-11-19T09:15:51Z","msg":"Starting manager"}
+{"level":"info","ts":"2026-11-19T09:15:51Z","logger":"controller-runtime.metrics","msg":"Starting metrics server"}
+{"level":"info","ts":"2026-11-19T09:15:51Z","logger":"controller-runtime.metrics","msg":"Serving metrics server","bindAddress":":9113","secure":false}
+{"level":"info","ts":"2026-11-19T09:15:51Z","msg":"starting server","name":"health probe","addr":"[::]:8081"}
+{"level":"info","ts":"2026-11-19T09:15:51Z","logger":"agentGRPCServer","msg":"Starting GRPC Server"}
+{"level":"info","ts":"2026-11-19T09:15:51Z","logger":"zoneSizeTicker","msg":"Zone size shrink check started","interval":30}
+{"level":"info","ts":"2026-11-19T09:15:53Z","logger":"eventLoop.eventHandler","msg":"Reconfigured control plane","batchID":2}
 ```
 
 ## Deploy the gateway
@@ -577,8 +579,8 @@ kubectl delete -f 2.gateway.yaml
 kubectl delete -f 1.nginxproxy.yaml
 
 helm uninstall ngf -n nginx-gateway
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.8.0" | kubectl delete -f -
-kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.8.0" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/gateway-api/standard?ref=v2.9.0" | kubectl delete -f -
+kubectl kustomize "https://github.com/nginx/nginx-gateway-fabric/config/crd/inference-extension/?ref=v2.9.0" | kubectl delete -f -
 kubectl delete ns nginx-gateway
 
 helm uninstall f5-cis -n kube-system
