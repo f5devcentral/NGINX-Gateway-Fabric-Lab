@@ -28,5 +28,6 @@ cd NGINX-Gateway-Fabric-Lab/labs
 - [Lab 12](12.waf-plm) - F5 WAF for NGINX using [Policy Lifecycle Manager](https://docs.nginx.com/nginx-gateway-fabric/waf-integration/get-started-plm/)
 - [Lab 13](13.gatewaylink) - Integration with F5 BIG-IP as an external load balancer
 - [Lab 14](14.externaldns) - Integration with [ExternalDNS](https://kubernetes-sigs.github.io/external-dns/latest/)
+- [Lab 15](15.ai-guardrails) - Integration with [F5 AI Guardrails](https://www.f5.com/products/ai-guardrails) to secure LLM traffic
 
 The official NGINX Gateway Fabric repository provides additional [examples](https://github.com/nginx/nginx-gateway-fabric/tree/main/examples)

@@ -304,7 +304,7 @@ kubectl create secret generic nplus-license --from-file license.jwt=<nginx-one-e
 Install NGINX Gateway Fabric through its Helm chart (set `nginx.image.tag` to the latest available NGINX Gateway Fabric version)
 ```bash
 helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
-  --set version=2.9.0
+  --set version=2.9.0 \
   --set nginx.image.repository=private-registry.nginx.com/nginx-gateway-fabric/nginx-plus-f5waf \
   --set nginx.image.tag=2.9.0 \
   --set nginx.plus=true \

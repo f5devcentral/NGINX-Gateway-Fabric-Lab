@@ -1,0 +1,22 @@
+apiVersion: gateway.nginx.org/v1alpha2
+kind: NginxProxy
+metadata:
+  name: guardrails-nginx-config
+spec:
+  dnsResolver:
+    addresses:
+    - type: Hostname
+      value: "kube-dns.kube-system.svc.cluster.local"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guardrails-api
+spec:
+  type: ExternalName
+  externalName: <F5_AI_GUARDRAILS_API_HOSTNAME>
+  ports:
+  - name: https
+    port: 443
+    protocol: TCP
