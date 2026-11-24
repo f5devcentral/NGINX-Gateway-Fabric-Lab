@@ -25,10 +25,23 @@ Prerequisites to use this repository are:
 
 ## Deployment
 
-| Deployment | [Lab 1](labs/1.basic-app) | [Lab 2](labs/2.advanced-routing) | [Lab 3](labs/3.http-headers) | [Lab 4](labs/4.tls-offload) | [Lab 5](labs/5.traffic-splitting) | [Lab 6](labs/6.grpc) | [Lab 7](labs/7.fastcgi) | [Lab 8](labs/8.auth-jwt) | [Lab 9](labs/9.rate-limit) | [Lab 10](labs/10.inference-extensions) | [Lab 11](labs/11.waf) | [Lab 12](labs/12.waf-plm) | [Lab 13](labs/13.gatewaylink) | [Lab 14](labs/14.externaldns) | [Lab 15](labs/15.ai-guardrails) |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| [Deploy](/DEPLOYING.md) NGINX Gateway Fabric and F5 WAF for NGINX | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| [Deploy](/labs) use case directly | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Lab | [Deploy](/DEPLOYING.md) NGINX Gateway Fabric and F5 WAF for NGINX | [Deploy](/labs) use case directly |
+| :--- | :---: | :---: |
+| [Lab 1](labs/1.basic-app) | ✅ | ❌ |
+| [Lab 2](labs/2.advanced-routing) | ✅ | ❌ |
+| [Lab 3](labs/3.http-headers) | ✅ | ❌ |
+| [Lab 4](labs/4.tls-offload) | ✅ | ❌ |
+| [Lab 5](labs/5.traffic-splitting) | ✅ | ❌ |
+| [Lab 6](labs/6.grpc) | ✅ | ❌ |
+| [Lab 7](labs/7.fastcgi) | ✅ | ❌ |
+| [Lab 8](labs/8.auth-jwt) | ✅ | ❌ |
+| [Lab 9](labs/9.rate-limit) | ✅ | ❌ |
+| [Lab 10](labs/10.inference-extensions) | ✅ | ❌ |
+| [Lab 11](labs/11.waf) | ✅ | ❌ |
+| [Lab 12](labs/12.waf-plm) | ❌ | ✅ |
+| [Lab 13](labs/13.gatewaylink) | ❌ | ✅ |
+| [Lab 14](labs/14.externaldns) | ❌ | ✅ |
+| [Lab 15](labs/15.ai-guardrails) | ❌ | ✅ |
 
 > [!NOTE]
 > Labs 1–11 use the shared [DEPLOYING.md](/DEPLOYING.md) setup, whereas Labs 12 (waf-plm), 13 (gatewaylink), 14 (externaldns), and 15 (AI Guardrails) are self-contained and deploy NGINX Gateway Fabric directly within each lab.
