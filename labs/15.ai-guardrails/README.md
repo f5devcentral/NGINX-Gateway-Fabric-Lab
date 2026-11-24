@@ -9,8 +9,6 @@ A working F5 AI Guardrails authentication token is needed
 
 The following diagram illustrates the architecture and traffic flow for this lab:
 
-https://github.com/f5devcentral/NGINX-Gateway-Fabric-Lab/blob/lab15/labs/15.ai-guardrails/15-ai.guardrails.png
-
 ![Traffic Flow](15-ai-guardrails.svg)
 
 F5 AI Guardrails can inspect LLM traffic on two independent paths:
@@ -433,7 +431,7 @@ X-Inference-Port: 8000
 
 Enable the `SSN guardrail` on the F5 AI Guardrails management console
 
-![F5 AI Guardrails](https://raw.githubusercontent.com/f5devcentral/NGINX-Gateway-Fabric-Lab/refs/heads/main/labs/15.ai-guardrails/ai.guardrails-ssn.png)
+![F5 AI Guardrails](ai.guardrails-ssn.png)
 
 
 Setting guardrails to block SSN numbers will trigger an `HTTP/403` response
