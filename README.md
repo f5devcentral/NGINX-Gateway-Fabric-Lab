@@ -20,6 +20,7 @@ Prerequisites to use this repository are:
 * [grpcurl](https://github.com/fullstorydev/grpcurl)
 * Python 3.14 or later
 * An F5 BIG-IP system (only for [Lab 13](labs/13.gatewaylink/))
+* Access to [F5 AI Guardrails](https://www.f5.com/products/ai-guardrails) (only for [Lab 15](labs/15.ai-guardrails/))
 * Valid NGINX Plus license. You can request a trial license [here](https://www.f5.com/trials/nginx-one)
   * Three files are needed (sample names here are from a trial license): `nginx-one-eval.crt` `nginx-one-eval.key` and `nginx-one-eval.jwt`
 
@@ -27,21 +28,21 @@ Prerequisites to use this repository are:
 
 | Lab | [Deploy](/DEPLOYING.md) NGINX Gateway Fabric and F5 WAF for NGINX | [Deploy](/labs) use case directly |
 | :--- | :---: | :---: |
-| [Lab 1](labs/1.basic-app) | ✅ | ❌ |
-| [Lab 2](labs/2.advanced-routing) | ✅ | ❌ |
-| [Lab 3](labs/3.http-headers) | ✅ | ❌ |
-| [Lab 4](labs/4.tls-offload) | ✅ | ❌ |
-| [Lab 5](labs/5.traffic-splitting) | ✅ | ❌ |
-| [Lab 6](labs/6.grpc) | ✅ | ❌ |
-| [Lab 7](labs/7.fastcgi) | ✅ | ❌ |
-| [Lab 8](labs/8.auth-jwt) | ✅ | ❌ |
-| [Lab 9](labs/9.rate-limit) | ✅ | ❌ |
-| [Lab 10](labs/10.inference-extensions) | ✅ | ❌ |
-| [Lab 11](labs/11.waf) | ✅ | ❌ |
-| [Lab 12](labs/12.waf-plm) | ❌ | ✅ |
-| [Lab 13](labs/13.gatewaylink) | ❌ | ✅ |
-| [Lab 14](labs/14.externaldns) | ❌ | ✅ |
-| [Lab 15](labs/15.ai-guardrails) | ❌ | ✅ |
+| [Lab 1](labs/1.basic-app) - Basic URI-based routing | ✅ | ❌ |
+| [Lab 2](labs/2.advanced-routing) - Advanced routing using HTTP matching conditions | ✅ | ❌ |
+| [Lab 3](labs/3.http-headers) - Modify HTTP request and response headers | ✅ | ❌ |
+| [Lab 4](labs/4.tls-offload) - TLS offload | ✅ | ❌ |
+| [Lab 5](labs/5.traffic-splitting) - Traffic splitting | ✅ | ❌ |
+| [Lab 6](labs/6.grpc) - gRPC support | ✅ | ❌ |
+| [Lab 7](labs/7.fastcgi) - Publishing a FastCGI application using SnippetsFilter | ✅ | ❌ |
+| [Lab 8](labs/8.auth-jwt) - JWT authentication | ✅ | ❌ |
+| [Lab 9](labs/9.rate-limit) - Rate limiting | ✅ | ❌ |
+| [Lab 10](labs/10.inference-extensions) - Gateway API Inference Extension | ✅ | ❌ |
+| [Lab 11](labs/11.waf) - F5 WAF for NGINX using bundle source | ✅ | ❌ |
+| [Lab 12](labs/12.waf-plm) - F5 WAF for NGINX using Policy Lifecycle Manager | ❌ | ✅ |
+| [Lab 13](labs/13.gatewaylink) - Integration with F5 BIG-IP as an external load balancer | ❌ | ✅ |
+| [Lab 14](labs/14.externaldns) - Integration with ExternalDNS | ❌ | ✅ |
+| [Lab 15](labs/15.ai-guardrails) - Integration with F5 AI Guardrails to secure LLM traffic | ❌ | ✅ |
 
 > [!NOTE]
 > Labs 1–11 use the shared [DEPLOYING.md](/DEPLOYING.md) setup, whereas Labs 12 (waf-plm), 13 (gatewaylink), 14 (externaldns), and 15 (AI Guardrails) are self-contained and deploy NGINX Gateway Fabric directly within each lab.
